@@ -11,23 +11,28 @@ a3 = 0.01
 a4 = 0.01
 
 class Particle:
-    fidelity = 0.1
-    size = 50
-    genX = 0.0
+    fidelity = 0.1 ###this is the map fidelity(e.g 0.1 means every pixel is 10cm * 10cm)
+    size = 50  ### the size of the map (map always is square for now)
+    genX = 0.0 ### this is the ros prediction for its pos
     genY = 0.0
     genTH = 0.0
-    NoP = 256
+    NoP = 256 ### Number of Particles
 
     def __init__(self, x, y, th, map, prop, propMap,tickMap):
         self.x = x
         self.y = y
         self.th = th
-        self.map = map
-        self.prop = prop
-        self.propMap = propMap
+        self.map = map ### The map as calculated via the propMap (if propability >=0.5 then pixel is black if propability <0.5 pixel is white else gray)
+        self.prop = prop ### A number that is the propability of this Particle to be perfectly in line with our external model of space reality
+        self.propMap = propMap ##This is the map that holds the propabilities of every square mathematically [0,1]
         self.tickMap = tickMap ##TickMap is a map that shows how many times have each square seperately being *seen*
 
+
+
+    ##Calculates particle position and propability of that position
+
     def moveParticle(self, drot1, dtrans, drot2):
+
         sgm1 = a1*drot1 + a2*dtrans
         sgm2 = a3*dtrans + a4*(drot2+drot1)
         sgm3 = a1*drot2 + a2*dtrans
@@ -46,11 +51,14 @@ class Particle:
 
         self.prop = norm(0,sgm1).pdf(dev1)*norm(0,sgm2).pdf(dev2)*norm(0,sgm3).pdf(dev3)
 
+    #Calculates the newPropabilityMap
+
     def propabilityMapMaker(self,newMap):
         for i in range(0,Particle.size):
             for j in range(0,Particle.size):
                 if newMap[i][j] != -1:
                     self.tilePropability(i,j,newMap[i][j])
+    #Calculates the propability of each pixel in the map
 
     def tilePropability(self,x,y,number):
         if self.propMap[x][y] == -1:
@@ -63,15 +71,20 @@ class Particle:
         self.tickMap[x][y] += 1
         self.propMap[x][y] /= self.tickMap[x][y]
 
+    #Calculates the new Map
+
     def mapMaker(self):
         for i in range(0,Particle.size):
             for j in range(0,Particle.size):
                 TileMaker(i,j,self.propMap[i][j])
 
+
     def TileMaker(self,x,y,prop):
         self.map[x][y] = math.round(prop)
 
-    def calcSqrErrorMap(self,newMap):
+    #Calculates the absolute error of the Map and the newMap
+
+    def calcErrorMap(self,newMap):
         sum = 0
         for i in range(0,Particle.size):
             for j in range(0, Particle.size):
