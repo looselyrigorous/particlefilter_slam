@@ -155,8 +155,8 @@ class Particle:
         Particle.genTH = TH
 
     def newMapMaker(self,StartAngle,EndAngle,Dangle,Points):
-
-
+        newMap = [[-1] * Particle.size for i in range(Particle.size)]
+        
 
 def quaternion_to_euler_angle(w, x, y, z):
     ysqr = y * y
