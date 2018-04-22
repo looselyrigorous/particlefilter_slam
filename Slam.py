@@ -16,7 +16,7 @@ class Particle:
     genX = 0.0
     genY = 0.0
     genTH = 0.0
-
+    NoP = 256
 
     def __init__(self, x, y, th, map, prop, propMap,tickMap):
         self.x = x
@@ -136,10 +136,14 @@ class Particle:
         return drot1,dtrans,drot2
 
 
-    def ReplaceFakeDims(X, Y, TH):
+    def replaceGenDims(X, Y, TH):
         Particle.genX = X
         Particle.genY = Y
         Particle.genTH = TH
+
+    def newMapMaker(self,StartAngle,EndAngle,Dangle,Points):
+
+
 
 def quaternion_to_euler_angle(w, x, y, z):
     ysqr = y * y
@@ -158,5 +162,3 @@ def quaternion_to_euler_angle(w, x, y, z):
     Z = math.degrees(math.atan2(t3, t4))
 
     return X, Y, Z
-
-
