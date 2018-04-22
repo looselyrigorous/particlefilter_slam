@@ -12,7 +12,7 @@ a4 = 0.01
 
 class Particle:
     fidelity = 0.1 ###this is the map fidelity(e.g 0.1 means every pixel is 10cm * 10cm)
-    size = 50  ### the size of the map (map always is square for now)
+    size = 51  ### the size of the map (map always is square for now)
     genX = 0.0 ### this is the ros prediction for its pos
     genY = 0.0
     genTH = 0.0
@@ -95,12 +95,15 @@ class Particle:
 
     def calcSqrError(self,newMap,x0,y0):
         for i in range(0,2*Particle.size):
-            if self.calcSqrErrorRadius(newMap,x0,y0,i) == True:
+            if self.calcErrorRadius(newMap, x0, y0, i) == True:
                 return i
 
         return i
 
-    def calcSqrErrorRadius(self,newMap,x0,y0,radius):
+    ## Calculating if there exist any same tiles in a radius and then returns True or False
+    ## It uses a modified draw Circle algorithm
+
+    def calcErrorRadius(self, newMap, x0, y0, radius):
         x = 0
         y = 0
         dx = 1
@@ -156,7 +159,10 @@ class Particle:
 
     def newMapMaker(self,StartAngle,EndAngle,Dangle,Points):
         newMap = [[-1] * Particle.size for i in range(Particle.size)]
-        
+
+    def realCoordToGrid(self,x,y):
+        middlePoint = ((Particle.size-1)/2)*Particle.fidelity
+        return ((size-1)/2)*(x-middlePoint),((size-1)/2)*(y-middlePoint)
 
 def quaternion_to_euler_angle(w, x, y, z):
     ysqr = y * y
