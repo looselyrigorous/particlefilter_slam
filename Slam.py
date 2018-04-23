@@ -3,6 +3,7 @@ from numpy import abs
 from numpy import sin,cos
 import math
 from scipy.stats import norm
+import numpy as np
 
 from math import atan2
 a1 = 0.01
@@ -143,9 +144,23 @@ class Particle:
             else:
                 return 0
         return 0
-    
-    def newMapMaker(self,StartAngle,EndAngle,Dangle,Points):
+
+    def newMapMaker(self, StartAngle, EndAngle, Dangle, Points, x0, y0, x1, y1, Wall):
         newMap = [[-1] * Particle.size for i in range(Particle.size)]
+        deltax = x1 - x0
+        deltay = y1 - y0
+        deltaerr = math.abs(deltay/deltax)
+
+        error = 0.0
+        y = y0
+
+        for x in range(x0,x1):
+            newMap[x][y] = 0
+            error += deltaerr
+            while error >=0.5:
+                y+= np.sign(deltay)
+                error -= 1.0
+        newMap[x1][y1] = 1
 
 
 def calculateDs(X, Y, TH):
@@ -168,6 +183,15 @@ def realCoordToGrid(x,y):
 
     x += (Particle.size-1)/2
     y += (Particle.size-1)/2
+
+    if x<0:
+        x = 0
+    elif x> Particle.size:
+        x = Particle.size
+    if y<0:
+        y = 0
+    elif y>Particle.size:
+        y = Particle.size
 
     return x,y
 
