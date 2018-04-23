@@ -5,6 +5,7 @@ from numpy import sin,cos
 import math
 from scipy.stats import norm
 import numpy as np
+from copy import deepcopy
 
 
 from math import atan2
@@ -204,7 +205,7 @@ class Particle:
             return True
         return False
 
-    def procriate(self):
+    def procreate(self):
         return Particle(self.x,self.y,self.th,self.map,self.propMap,self.tickMap)
 
 def calculateDs(X, Y, TH):
@@ -271,8 +272,13 @@ def selectSurvivors(Particles):
             currParticle = Particles[particleIndex]
             i-=1
 
-    for i in survivors:
-        
+    children = list()
+
+    for s in survivors:
+        children.append(s.procreate())
+
+    return children
+
 
 def quaternion_to_euler_angle(w, x, y, z):
     ysqr = y * y
