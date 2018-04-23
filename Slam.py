@@ -22,7 +22,7 @@ class Particle:
     genTH = 0.0
     NoP = 256 ### Number of Particles
 
-    def __init__(self, x, y, th, map, prop, propMap,tickMap):
+    def __init__(self, x, y, th, map, propMap,tickMap):
         self.x = x
         self.y = y
         self.th = th
