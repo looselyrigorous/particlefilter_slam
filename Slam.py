@@ -239,6 +239,8 @@ def odomUpdate(Particles,X,Y,TH):
 
     replaceGenDims(X,Y,TH)
 
+#def mapUpdate()
+
 
 def realCoordToGrid(x,y):
     x *= 2/Particle.fidelity
