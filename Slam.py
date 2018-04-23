@@ -13,7 +13,7 @@ a4 = 0.01
 
 class Particle:
     fidelity = 0.1 ###this is the map fidelity(e.g 0.1 means every pixel is 10cm * 10cm)
-    size = 51  ### the size of the map (map always is square for now)
+    size = 101  ### the size of the map (map always is square for now)
     genX = 0.0 ### this is the ros prediction for its pos
     genY = 0.0
     genTH = 0.0
@@ -145,23 +145,39 @@ class Particle:
                 return 0
         return 0
 
-    def newMapMaker(self, StartAngle, EndAngle, Dangle, Points, x0, y0, x1, y1, Wall):
+    def newMapMaker(self, StartAngle, EndAngle, Dangle, Points, MaxDepth,x0, y0):
         newMap = [[-1] * Particle.size for i in range(Particle.size)]
+        StartAngle += self.th
+        EndAngle += self.th
+        count = 0
+
+        for i in range(StartAngle,EndAngle,Dangle):
+            d = Points[count]
+            if d!=np.inf and d!=np.nan:
+                newMap = newTiles(newMap,x0,y0,x0+d*np.cos(i),y0+d*np.sin(i),True)
+            #else:### we need to know what to do here
+            count+=1
+
+        return newMap
+
+    def newTiles(self,newMap,x0,y0,x1,y1,Wall):
         deltax = x1 - x0
         deltay = y1 - y0
-        deltaerr = math.abs(deltay/deltax)
+        deltaerr = math.abs(deltay / deltax)
 
         error = 0.0
         y = y0
 
-        for x in range(x0,x1):
+        for x in range(x0, x1):
             newMap[x][y] = 0
             error += deltaerr
-            while error >=0.5:
-                y+= np.sign(deltay)
+            while error >= 0.5:
+                y += np.sign(deltay)
                 error -= 1.0
-        newMap[x1][y1] = 1
+        if Wall == True:
+            newMap[x1][y1] = 1
 
+        return newMap
 
 def calculateDs(X, Y, TH):
     drot1 = atan2(Y - Particle.genY, X - Particle.genX) - Particle.genTH
