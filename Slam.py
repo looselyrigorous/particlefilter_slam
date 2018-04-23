@@ -1,9 +1,11 @@
-from numpy.random import normal
+from numpy.random import normal,random
+
 from numpy import abs
 from numpy import sin,cos
 import math
 from scipy.stats import norm
 import numpy as np
+
 
 from math import atan2
 a1 = 0.01
@@ -27,7 +29,6 @@ class Particle:
         self.prop = prop ### A number that is the propability of this Particle to be perfectly in line with our external model of space reality
         self.propMap = propMap ##This is the map that holds the propabilities of every square mathematically [0,1]
         self.tickMap = tickMap ##TickMap is a map that shows how many times have each square seperately being *seen*
-
 
 
     ##Calculates particle position and propability of that position
@@ -191,6 +192,18 @@ class Particle:
 
         return newMap
 
+    def normalize(self,ammount):
+        self.prop /= ammount
+
+    def lineUp(self,start):
+        self.lineStart = start
+        self.lineEnd = start + self.prop
+
+    def survive(self,number):
+        if number>=self.lineStart and number<self.lineEnd:
+            return True
+        return False
+
 def calculateDs(X, Y, TH):
     drot1 = atan2(Y - Particle.genY, X - Particle.genX) - Particle.genTH
     dtrans = math.sqrt((Particle.genX - X)**2 + (Particle.genY - Y)**2)
@@ -223,6 +236,39 @@ def realCoordToGrid(x,y):
 
     return x,y
 
+#This function normalizes the propability of all the Particles to add to 1
+#Then every particle has a starting number and an ending number that we must hit in order for it to survive
+
+
+def normalizeAndLineUp(Particles):
+    sum =0
+    for p in Particles:
+        sum+=p.prop
+    for p in Particles:
+        p.normalize(sum)
+    nextStartPoint = 0
+    for p in Particles:
+        p.lineUp(sum)
+
+def selectSurvivors(Particles):
+    step = 1/NoP
+    startPoint = random()/Particle.NoP
+    survivors = list()
+    particleIndex = 0
+    currParticle = Particles[particleIndex]
+    currPoint = startPoint
+
+    for i in range(0,Particle.NoP):
+        survive = currParticle.survive(currPoint)
+        if survive:
+            survivors.append(currParticle)
+            currPoint+=step
+        else:
+            particleIndex+=1
+            currParticle = Particles[particleIndex]
+            i-=1
+
+    
 
 def quaternion_to_euler_angle(w, x, y, z):
     ysqr = y * y
@@ -241,3 +287,5 @@ def quaternion_to_euler_angle(w, x, y, z):
     Z = math.degrees(math.atan2(t3, t4))
 
     return X, Y, Z
+
+
