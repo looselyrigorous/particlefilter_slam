@@ -145,8 +145,10 @@ class Particle:
                 return 0
         return 0
 
-    def newMapMaker(self, StartAngle, EndAngle, Dangle, Points, MaxDepth,x0, y0):
+    def newMapMaker(self, StartAngle, EndAngle, Dangle, Points, MaxDepth):
         newMap = [[-1] * Particle.size for i in range(Particle.size)]
+        x0 = self.x
+        y0 = self.y
         StartAngle += self.th
         EndAngle += self.th
         count = 0
@@ -154,10 +156,19 @@ class Particle:
         for i in range(StartAngle,EndAngle,Dangle):
             d = Points[count]
             if d!=np.inf and d!=np.nan:
-                newMap = newTiles(newMap,x0,y0,x0+d*np.cos(i),y0+d*np.sin(i),True)
-            #else:### we need to know what to do here
+                x1 = x0 + x0 + d * np.cos(i)
+                y1 = y0 + d * np.sin(i)
+                Wall = True
+            else:### we need to know what to do here
+                x1 = x0 + x0 + MaxDepth * np.cos(i)
+                y1 = y0 + MaxDepth * np.sin(i)
+                Wall = False
             count+=1
 
+            xS,yS = realCoordToGrid(x0,y0)
+            xE,yE = realCoordToGrid(x1,y1)
+            newMap = newTiles(newMap,xS,yS,xE,yE,Wall)
+            
         return newMap
 
     def newTiles(self,newMap,x0,y0,x1,y1,Wall):
