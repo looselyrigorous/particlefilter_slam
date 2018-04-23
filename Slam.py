@@ -1,13 +1,10 @@
 from numpy.random import normal,random
-
 from numpy import abs
 from numpy import sin,cos
 import math
 from scipy.stats import norm
 import numpy as np
 from copy import deepcopy
-
-
 from math import atan2
 a1 = 0.01
 a2 = 0.01
@@ -221,6 +218,19 @@ def replaceGenDims(X, Y, TH):
     Particle.genY = Y
     Particle.genTH = TH
 
+def initParticles():
+    Particles = list()
+    x = 0
+    y = 0
+    th = 0
+    map = [[-1] * Particle.size for i in range(Particle.size)]
+    propMap = deepcopy(map)
+    tickMap = [[0] * Particle.size for i in range(Particle.size)]
+    for i in range(0,Particle.NoP):
+        Particles.append(Particle(x,y,th,map,propMap,tickMap))
+    return Particles
+
+
 
 def realCoordToGrid(x,y):
     x *= 2/Particle.fidelity
@@ -278,6 +288,9 @@ def selectSurvivors(Particles):
         children.append(s.procreate())
 
     return children
+
+
+
 
 
 def quaternion_to_euler_angle(w, x, y, z):
