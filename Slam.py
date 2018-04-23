@@ -26,10 +26,10 @@ class Particle:
         self.x = x
         self.y = y
         self.th = th
-        self.map = map ### The map as calculated via the propMap (if propability >=0.5 then pixel is black if propability <0.5 pixel is white else gray)
-        self.prop = prop ### A number that is the propability of this Particle to be perfectly in line with our external model of space reality
-        self.propMap = propMap ##This is the map that holds the propabilities of every square mathematically [0,1]
-        self.tickMap = tickMap ##TickMap is a map that shows how many times have each square seperately being *seen*
+        self.map = deepcopy(map) ### The map as calculated via the propMap (if propability >=0.5 then pixel is black if propability <0.5 pixel is white else gray)
+        self.prop = 1 ### A number that is the propability of this Particle to be perfectly in line with our external model of space reality
+        self.propMap = deepcopy(propMap) ##This is the map that holds the propabilities of every square mathematically [0,1]
+        self.tickMap = deepcopy(tickMap) ##TickMap is a map that shows how many times have each square seperately being *seen*
 
 
     ##Calculates particle position and propability of that position
