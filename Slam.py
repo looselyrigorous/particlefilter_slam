@@ -143,33 +143,33 @@ class Particle:
             else:
                 return 0
         return 0
-
-    def calculateDs(X, Y, TH):
-        drot1 = atan2(Y - Particle.genY, X - Particle.genX) - Particle.genTH
-        dtrans = math.sqrt((Particle.genX - X)**2 + (Particle.genY - Y)**2)
-        drot2 = TH - Particle.genTH - drot1
-
-        return drot1,dtrans,drot2
-
-
-    def replaceGenDims(X, Y, TH):
-        Particle.genX = X
-        Particle.genY = Y
-        Particle.genTH = TH
-
+    
     def newMapMaker(self,StartAngle,EndAngle,Dangle,Points):
         newMap = [[-1] * Particle.size for i in range(Particle.size)]
 
-    def realCoordToGrid(self,x,y):
-        x *= 2/fidelity
-        y *= 2/fidelity
 
-        x += (size-1)/2
-        y += (size-1)/2
+def calculateDs(X, Y, TH):
+    drot1 = atan2(Y - Particle.genY, X - Particle.genX) - Particle.genTH
+    dtrans = math.sqrt((Particle.genX - X)**2 + (Particle.genY - Y)**2)
+    drot2 = TH - Particle.genTH - drot1
 
-        return x,y
+    return drot1,dtrans,drot2
 
-    
+
+def replaceGenDims(X, Y, TH):
+    Particle.genX = X
+    Particle.genY = Y
+    Particle.genTH = TH
+
+
+def realCoordToGrid(x,y):
+    x *= 2/Particle.fidelity
+    y *= 2/Particle.fidelity
+
+    x += (Particle.size-1)/2
+    y += (Particle.size-1)/2
+
+    return x,y
 
 
 def quaternion_to_euler_angle(w, x, y, z):
