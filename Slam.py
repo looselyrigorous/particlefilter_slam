@@ -231,6 +231,14 @@ def initParticles():
     return Particles
 
 
+def odomUpdate(Particles,X,Y,TH):
+    drot1,dtrans,drot2 = calculateDs(X,Y,TH)
+
+    for i in Particles:
+        i.moveParticle(drot1,dtrans,drot2)
+
+    replaceGenDims(X,Y,TH)
+
 
 def realCoordToGrid(x,y):
     x *= 2/Particle.fidelity
