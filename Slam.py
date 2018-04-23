@@ -168,7 +168,7 @@ class Particle:
             xS,yS = realCoordToGrid(x0,y0)
             xE,yE = realCoordToGrid(x1,y1)
             newMap = newTiles(newMap,xS,yS,xE,yE,Wall)
-            
+
         return newMap
 
     def newTiles(self,newMap,x0,y0,x1,y1,Wall):
