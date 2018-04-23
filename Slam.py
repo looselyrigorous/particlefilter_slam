@@ -239,9 +239,12 @@ def odomUpdate(Particles,X,Y,TH):
 
     replaceGenDims(X,Y,TH)
 
-def mapUpdate(StartAngle, EndAngle, Dangle, Points, MaxDepth):
-    #TODO
-
+def mapUpdate(Particles,StartAngle, EndAngle, Dangle, Points, MaxDepth):
+    for p in Particles:
+        newMap = p.newMapMaker(StartAngle,EndAngle,Dangle,Points,MaxDepth)
+        p.calcErrorMap(newMap)
+        p.propabilityMapMaker(newMap)
+        p.mapMaker()
 
 def realCoordToGrid(x,y):
     x *= 2/Particle.fidelity
