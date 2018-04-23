@@ -161,8 +161,16 @@ class Particle:
         newMap = [[-1] * Particle.size for i in range(Particle.size)]
 
     def realCoordToGrid(self,x,y):
-        middlePoint = ((Particle.size-1)/2)*Particle.fidelity
-        return ((size-1)/2)*(x-middlePoint),((size-1)/2)*(y-middlePoint)
+        x *= 2/fidelity
+        y *= 2/fidelity
+
+        x += (size-1)/2
+        y += (size-1)/2
+
+        return x,y
+
+    
+
 
 def quaternion_to_euler_angle(w, x, y, z):
     ysqr = y * y
