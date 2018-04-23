@@ -90,11 +90,12 @@ class Particle:
         for i in range(0,Particle.size):
             for j in range(0, Particle.size):
                 if newMap[i][j] != -1:
-                    sum+= self.calcSqrError(newMap,i,j)
+                    sum+= self.calcError(newMap, i, j)
 
         self.prop *= 1/sum
+    ##This might need to become square Error of each different pixel
 
-    def calcSqrError(self,newMap,x0,y0):
+    def calcError(self, newMap, x0, y0):
         for i in range(0,2*Particle.size):
             if self.calcErrorRadius(newMap, x0, y0, i) == True:
                 return i
