@@ -239,7 +239,8 @@ def odomUpdate(Particles,X,Y,TH):
 
     replaceGenDims(X,Y,TH)
 
-#def mapUpdate()
+def mapUpdate(StartAngle, EndAngle, Dangle, Points, MaxDepth):
+    #TODO
 
 
 def realCoordToGrid(x,y):
