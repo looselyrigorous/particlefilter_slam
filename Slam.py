@@ -204,6 +204,9 @@ class Particle:
             return True
         return False
 
+    def procriate(self):
+        return Particle(self.x,self.y,self.th,self.map,self.propMap,self.tickMap)
+
 def calculateDs(X, Y, TH):
     drot1 = atan2(Y - Particle.genY, X - Particle.genX) - Particle.genTH
     dtrans = math.sqrt((Particle.genX - X)**2 + (Particle.genY - Y)**2)
@@ -268,7 +271,8 @@ def selectSurvivors(Particles):
             currParticle = Particles[particleIndex]
             i-=1
 
-    
+    for i in survivors:
+        
 
 def quaternion_to_euler_angle(w, x, y, z):
     ysqr = y * y
