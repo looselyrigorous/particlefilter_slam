@@ -273,6 +273,12 @@ def hitMapUpdate(Particles):
     Particle.hitmap = hitmap
 
 
+# We need a function that makes the robot roam in conjuction with its velocity and such things
+
+
+
+
+#It transforms real coordinates to grid coordinates
 def realCoordToGrid(x,y):
     x *= 2/Particle.fidelity
     y *= 2/Particle.fidelity
@@ -353,3 +359,16 @@ def quaternion_to_euler_angle(w, x, y, z):
     return X, Y, Z
 
 
+def printMap():
+    maxProp = 0
+    bestParticle = None
+    for p in Particles:
+        if p.prop > maxProp:
+            bestParticle = p
+            maxProp = p.prop
+    map = bestParticle.map
+    for i in range(0,Particle.size):
+        stringer = ''
+        for j in range(0,Particle.size)
+            stringer += string(map[i][j])
+        print(stringer)
