@@ -15,7 +15,7 @@ a4 = 0.01
 
 class Particle:
     fidelity = 0.1  ###this is the map fidelity(e.g 0.1 means every pixel is 10cm * 10cm)
-    size = 101  ### the size of the map (map always is square for now)
+    size = 11  ### the size of the map (map always is square for now)
     genX = 0.0  ### this is the ros prediction for its pos
     genY = 0.0
     genTH = 0.0
@@ -67,6 +67,7 @@ class Particle:
     # Calculates the propability of each pixel in the map
 
     def tilePropability(self, x, y, number):
+        print(self.propMap[x])
         if self.propMap[x][y] == -1:
             self.propMap = number
             self.tickMap[x][y] = 1
@@ -302,11 +303,11 @@ def realCoordToGrid(x, y):
     if x < 0:
         x = 0
     elif x > Particle.size:
-        x = Particle.size
+        x = Particle.size-1
     if y < 0:
         y = 0
     elif y > Particle.size:
-        y = Particle.size
+        y = Particle.size-1
 
     return int(x), int(y)
 
