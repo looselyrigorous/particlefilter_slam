@@ -19,7 +19,7 @@ class Particle:
     genX = 0.0  ### this is the ros prediction for its pos
     genY = 0.0
     genTH = 0.0
-    NoP = 4  ### Number of Particles
+    NoP = 1  ### Number of Particles
     hitmap = None
 
     def __init__(self, x, y, th, map, prop, propMap, tickMap):
@@ -165,7 +165,9 @@ class Particle:
 
         maxCount = int((EndAngle - StartAngle) / Dangle)
 
+        print(maxCount)
         for count in range(0, maxCount):
+            print(count)
             i = StartAngle + Dangle * count
             d = Points[count]
             x1 = 0
@@ -174,7 +176,7 @@ class Particle:
                 x1 = x0 + d * np.cos(i)
                 y1 = y0 + d * np.sin(i)
                 Wall = True
-            else:  ### we need to know what to do here
+            else:
                 x1 = x0 + MaxDepth * np.cos(i)
                 y1 = y0 + MaxDepth * np.sin(i)
                 Wall = False
@@ -182,29 +184,65 @@ class Particle:
             xS, yS = realCoordToGrid(x0, y0)
             xE, yE = realCoordToGrid(x1, y1)
             newMap = self.newTiles(newMap, xS, yS, xE, yE, Wall)
+
         printMap(newMap)
         return newMap
 
     def newTiles(self, newMap, x0, y0, x1, y1, Wall):
-        deltax = x1 - x0
-        deltay = y1 - y0
-        deltaerr = abs(deltay / deltax)
 
-        error = 0.0
-        y = y0
+        if (abs(y1 - y0) < abs(x1 - x0)):
+            if x0 > x1:
+                newMap = self.plotLineLow(newMap, x1, y1, x0, y0)
+            else:
+                newMap = self.plotLineLow(newMap, x0, y0, x1, y0)
+        else:
+            if y0 > y1:
+                newMap = self.plotLineHigh(newMap, x1, y1, x0, y0)
+            else:
+                newMap = self.plotLineHigh(newMap, x0, y0, x1, y1)
 
-        # print(newMap)
-
-        for x in range(x0, x1, int(np.sign(x0 - x1))):
-            print(0)
-            newMap[x][y] = 0
-            error += deltaerr
-            while error >= 0.5:
-                y += np.sign(deltay)
-                newMap[x][y] = 0
-                error -= 1.0
         if Wall == True:
             newMap[x1][y1] = 1
+
+        return newMap
+
+    def plotLineLow(self, newMap, x0, y0, x1, y1):
+        dx = x1 - x0
+        dy = y1 - y0
+        yi = 1
+        if dy < 0:
+            yi = - 1
+            dy = -dy
+        D = 2 * dy - dx
+        y = y0
+
+        for x in range(x0, x1, int(np.sign(dx))):
+            newMap[x][y] = 0
+            if D > 0:
+                print(x)
+                y += yi
+                D -= 2 * dx
+            D += 2 * dy
+
+        return newMap
+
+    def plotLineHigh(self, newMap, x0, y0, x1, y1):
+        dx = x1 - x0
+        dy = y1 - y0
+        xi = 1
+        if dx < 0:
+            xi = -1
+            dx = -dx
+        D = 2 * dx - dy
+        x = x0
+
+        for y in range(y0, y1, int(np.sign(dy))):
+            newMap[x][y] = 0
+            if D > 0:
+                x += xi
+                D -= 2 * dy
+
+            D += 2 * dx
 
         return newMap
 
