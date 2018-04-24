@@ -369,12 +369,12 @@ def printMap():
     map = bestParticle.map
     for i in range(0,Particle.size):
         stringer = ''
-        for j in range(0,Particle.size)
+        for j in range(0,Particle.size):
             occ = map[i][j]
             if occ == 1:
                 stringer+='x'
             elif occ ==0:
                 stringer+= 'O'
-            else
+            else:
                 stringer += ' '
         print(stringer)
