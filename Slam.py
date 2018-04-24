@@ -15,11 +15,11 @@ a4 = 0.01
 
 class Particle:
     fidelity = 0.1  ###this is the map fidelity(e.g 0.1 means every pixel is 10cm * 10cm)
-    size = 51  ### the size of the map (map always is square for now)
+    size = 101  ### the size of the map (map always is square for now)
     genX = 0.0  ### this is the ros prediction for its pos
     genY = 0.0
     genTH = 0.0
-    NoP = 32  ### Number of Particles
+    NoP = 4  ### Number of Particles
     hitmap = None
 
     def __init__(self, x, y, th, map, prop, propMap, tickMap):
@@ -67,9 +67,11 @@ class Particle:
     # Calculates the propability of each pixel in the map
 
     def tilePropability(self, x, y, number):
-        #print(x,y)
-        #print(type(self.propMap))
+        # print(x,y)
+        # print(type(self.propMap))
         if self.propMap[x][y] == -1:
+            if number == 0:
+                print(0)
             self.propMap[x][y] = number
             self.tickMap[x][y] = 1
             return
@@ -98,7 +100,7 @@ class Particle:
                 if newMap[i][j] != -1:
                     sum += self.calcError(newMap, i, j)
 
-        self.prop *= 1 / (sum+1)
+        self.prop *= 1 / (sum + 1)
 
     ##This might need to become square Error of each different pixel
 
@@ -153,27 +155,6 @@ class Particle:
                 return 0
         return 0
 
-    def newTiles(self, newMap, x0, y0, x1, y1, Wall):
-        deltax = x1 - x0
-        deltay = y1 - y0
-        deltaerr = abs(deltay / deltax)
-
-        error = 0.0
-        y = y0
-
-        # print(newMap)
-
-        for x in range(x0, x1, int(np.sign(x0 - x1))):
-            newMap[x][y] = 0
-            error += deltaerr
-            while error >= 0.5:
-                y += np.sign(deltay)
-                error -= 1.0
-        if Wall == True:
-            newMap[x1][y1] = 1
-
-        return newMap
-
     def newMapMaker(self, StartAngle, EndAngle, Dangle, Points, MaxDepth):
         newMap = [[-1] * Particle.size for i in range(Particle.size)]
         x0 = self.x
@@ -201,6 +182,29 @@ class Particle:
             xS, yS = realCoordToGrid(x0, y0)
             xE, yE = realCoordToGrid(x1, y1)
             newMap = self.newTiles(newMap, xS, yS, xE, yE, Wall)
+        printMap(newMap)
+        return newMap
+
+    def newTiles(self, newMap, x0, y0, x1, y1, Wall):
+        deltax = x1 - x0
+        deltay = y1 - y0
+        deltaerr = abs(deltay / deltax)
+
+        error = 0.0
+        y = y0
+
+        # print(newMap)
+
+        for x in range(x0, x1, int(np.sign(x0 - x1))):
+            print(0)
+            newMap[x][y] = 0
+            error += deltaerr
+            while error >= 0.5:
+                y += np.sign(deltay)
+                newMap[x][y] = 0
+                error -= 1.0
+        if Wall == True:
+            newMap[x1][y1] = 1
 
         return newMap
 
@@ -260,12 +264,11 @@ def mapUpdate(Particles, StartAngle, EndAngle, Dangle, Points, MaxDepth):
     count = 0
     for p in Particles:
         print(count)
-        count+=1
+        count += 1
         newMap = p.newMapMaker(StartAngle, EndAngle, Dangle, Points, MaxDepth)
         p.calcErrorMap(newMap)
         p.propabilityMapMaker(newMap)
         p.mapMaker()
-
 
 
 # The hitmap is made for kobuki that is about 1 meter in diameter so it doesnt hit its fat body when roaming :)
@@ -308,11 +311,11 @@ def realCoordToGrid(x, y):
     if x < 0:
         x = 0
     elif x > Particle.size:
-        x = Particle.size-1
+        x = Particle.size - 1
     if y < 0:
         y = 0
     elif y > Particle.size:
-        y = Particle.size-1
+        y = Particle.size - 1
 
     return int(x), int(y)
 
@@ -377,7 +380,7 @@ def quaternion_to_euler_angle(w, x, y, z):
     return X, Y, Z
 
 
-def printMap(Particles):
+def printBestMap(Particles):
     maxProp = -1
     bestParticle = None
     for p in Particles:
@@ -385,12 +388,16 @@ def printMap(Particles):
             bestParticle = p
             maxProp = p.prop
     map = bestParticle.map
+    printMap(map)
+
+
+def printMap(Map):
     for i in range(0, Particle.size):
         stringer = ''
         for j in range(0, Particle.size):
-            occ = map[i][j]
+            occ = Map[i][j]
             if occ == 1:
-                stringer += 'x'
+                stringer += '1'
             elif occ == 0:
                 stringer += 'O'
             else:
