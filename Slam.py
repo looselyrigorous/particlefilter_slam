@@ -370,5 +370,11 @@ def printMap():
     for i in range(0,Particle.size):
         stringer = ''
         for j in range(0,Particle.size)
-            stringer += string(map[i][j])
+            occ = map[i][j]
+            if occ == 1:
+                stringer+='x'
+            elif occ ==0:
+                stringer+= 'O'
+            else
+                stringer += ' '
         print(stringer)
