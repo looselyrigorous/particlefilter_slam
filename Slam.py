@@ -15,7 +15,7 @@ a4 = 0.01
 
 class Particle:
     fidelity = 0.1  ###this is the map fidelity(e.g 0.1 means every pixel is 10cm * 10cm)
-    size = 11  ### the size of the map (map always is square for now)
+    size = 51  ### the size of the map (map always is square for now)
     genX = 0.0  ### this is the ros prediction for its pos
     genY = 0.0
     genTH = 0.0
@@ -67,9 +67,10 @@ class Particle:
     # Calculates the propability of each pixel in the map
 
     def tilePropability(self, x, y, number):
-        print(self.propMap[x])
+        #print(x,y)
+        #print(type(self.propMap))
         if self.propMap[x][y] == -1:
-            self.propMap = number
+            self.propMap[x][y] = number
             self.tickMap[x][y] = 1
             return
 
@@ -83,10 +84,10 @@ class Particle:
     def mapMaker(self):
         for i in range(0, Particle.size):
             for j in range(0, Particle.size):
-                TileMaker(i, j, self.propMap[i][j])
+                self.TileMaker(i, j, self.propMap[i][j])
 
     def TileMaker(self, x, y, prop):
-        self.map[x][y] = math.round(prop)
+        self.map[x][y] = round(prop)
 
     # Calculates the absolute error of the Map and the newMap
 
@@ -97,7 +98,7 @@ class Particle:
                 if newMap[i][j] != -1:
                     sum += self.calcError(newMap, i, j)
 
-        self.prop *= 1 / sum
+        self.prop *= 1 / (sum+1)
 
     ##This might need to become square Error of each different pixel
 
@@ -256,11 +257,15 @@ def odomUpdate(Particles, X, Y, TH):
 
 
 def mapUpdate(Particles, StartAngle, EndAngle, Dangle, Points, MaxDepth):
+    count = 0
     for p in Particles:
+        print(count)
+        count+=1
         newMap = p.newMapMaker(StartAngle, EndAngle, Dangle, Points, MaxDepth)
         p.calcErrorMap(newMap)
         p.propabilityMapMaker(newMap)
         p.mapMaker()
+
 
 
 # The hitmap is made for kobuki that is about 1 meter in diameter so it doesnt hit its fat body when roaming :)
@@ -377,7 +382,6 @@ def printMap(Particles):
     bestParticle = None
     for p in Particles:
         if p.prop > maxProp:
-            print('what')
             bestParticle = p
             maxProp = p.prop
     map = bestParticle.map
