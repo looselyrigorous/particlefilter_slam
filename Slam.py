@@ -18,16 +18,16 @@ class Particle:
     genY = 0.0
     genTH = 0.0
     NoP = 256 ### Number of Particles
+    hitmap = None
 
-    def __init__(self, x, y, th, map, propMap,tickMap):
+    def __init__(self, x, y, th, map,prop, propMap,tickMap):
         self.x = x
         self.y = y
         self.th = th
         self.map = deepcopy(map) ### The map as calculated via the propMap (if propability >=0.5 then pixel is black if propability <0.5 pixel is white else gray)
-        self.prop = 1 ### A number that is the propability of this Particle to be perfectly in line with our external model of space reality
+        self.prop = prop ### A number that is the propability of this Particle to be perfectly in line with our external model of space reality
         self.propMap = deepcopy(propMap) ##This is the map that holds the propabilities of every square mathematically [0,1]
         self.tickMap = deepcopy(tickMap) ##TickMap is a map that shows how many times have each square seperately being *seen*
-
 
     ##Calculates particle position and propability of that position
 
@@ -203,7 +203,7 @@ class Particle:
         return False
 
     def procreate(self):
-        return Particle(self.x,self.y,self.th,self.map,self.propMap,self.tickMap)
+        return Particle(self.x,self.y,self.th,self.map,self.prop,self.propMap,self.tickMap)
 
 def calculateDs(X, Y, TH):
     drot1 = atan2(Y - Particle.genY, X - Particle.genX) - Particle.genTH
@@ -245,6 +245,33 @@ def mapUpdate(Particles,StartAngle, EndAngle, Dangle, Points, MaxDepth):
         p.calcErrorMap(newMap)
         p.propabilityMapMaker(newMap)
         p.mapMaker()
+
+
+#The hitmap is made for kobuki that is about 1 meter in diameter so it doesnt hit its fat body when roaming :)
+
+def hitMapUpdate(Particles):
+    maxProp = 0
+    bestParticle = None
+    for p in Particles:
+        if p.prop>maxProp:
+            bestParticle = p
+            maxProp = p.prop
+
+    hitmap = [[0] * Particle.size for i in range(Particle.size)]
+    map = bestParticle.map
+    for i in range(0,Particle.size):
+        for j in range(0,Particle.size):
+            tile = map[i][j]
+            if tile == 1:
+                for k in range(0,5):
+                    for l in range(0,5):
+                        x = i+k
+                        y = j+l
+                        if x>=0 and x<Particle.size and y>=0 and y<Particle.size:
+                            hitmap[x][y] = 1
+
+    Particle.hitmap = hitmap
+
 
 def realCoordToGrid(x,y):
     x *= 2/Particle.fidelity
