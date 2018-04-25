@@ -162,13 +162,11 @@ class Particle:
         StartAngle += self.th
         EndAngle += self.th
         count = 0
+        maxCount = len(Points)
+        Dangle = (EndAngle - StartAngle) / maxCount
 
-        maxCount = int((EndAngle - StartAngle) / Dangle)
-
-        print(maxCount)
         for count in range(0, maxCount):
-            print(count)
-            i = StartAngle + Dangle * count
+            i = StartAngle - (Dangle * count)
             d = Points[count]
             x1 = 0
             y1 = 0
@@ -189,60 +187,25 @@ class Particle:
         return newMap
 
     def newTiles(self, newMap, x0, y0, x1, y1, Wall):
+        if x0 == x1:
+            if y0 == y1:
+                return newMap
+            else:
+                newMap = plotLineY(newMap, y0, y1, x1)
 
-        if (abs(y1 - y0) < abs(x1 - x0)):
-            if x0 > x1:
-                newMap = self.plotLineLow(newMap, x1, y1, x0, y0)
-            else:
-                newMap = self.plotLineLow(newMap, x0, y0, x1, y0)
+        elif y0 == y1:
+            newMap = plotLineX(newMap, x0, x1, y1)
+
+        elif (abs(x0 - x1) > abs(y0 - y1)):
+            newMap = plotLineXHigh(newMap, x0, x1, y0, y1)
+
         else:
-            if y0 > y1:
-                newMap = self.plotLineHigh(newMap, x1, y1, x0, y0)
-            else:
-                newMap = self.plotLineHigh(newMap, x0, y0, x1, y1)
+            newMap = plotLineYHigh(newMap, x0, x1, y0, y1)
 
         if Wall == True:
+            print(x0, y0)
+            print(x1, y1)
             newMap[x1][y1] = 1
-
-        return newMap
-
-    def plotLineLow(self, newMap, x0, y0, x1, y1):
-        dx = x1 - x0
-        dy = y1 - y0
-        yi = 1
-        if dy < 0:
-            yi = - 1
-            dy = -dy
-        D = 2 * dy - dx
-        y = y0
-
-        for x in range(x0, x1, int(np.sign(dx))):
-            newMap[x][y] = 0
-            if D > 0:
-                print(x)
-                y += yi
-                D -= 2 * dx
-            D += 2 * dy
-
-        return newMap
-
-    def plotLineHigh(self, newMap, x0, y0, x1, y1):
-        dx = x1 - x0
-        dy = y1 - y0
-        xi = 1
-        if dx < 0:
-            xi = -1
-            dx = -dx
-        D = 2 * dx - dy
-        x = x0
-
-        for y in range(y0, y1, int(np.sign(dy))):
-            newMap[x][y] = 0
-            if D > 0:
-                x += xi
-                D -= 2 * dy
-
-            D += 2 * dx
 
         return newMap
 
@@ -252,6 +215,7 @@ class Particle:
     def lineUp(self, start):
         self.lineStart = start
         self.lineEnd = start + self.prop
+        return lineEnd
 
     def survive(self, number):
         if number >= self.lineStart and number < self.lineEnd:
@@ -346,16 +310,7 @@ def realCoordToGrid(x, y):
     x += (Particle.size - 1) / 2
     y += (Particle.size - 1) / 2
 
-    if x < 0:
-        x = 0
-    elif x > Particle.size:
-        x = Particle.size - 1
-    if y < 0:
-        y = 0
-    elif y > Particle.size:
-        y = Particle.size - 1
-
-    return int(x), int(y)
+    return int(math.floor(x)), int(math.floor(y))
 
 
 # This function normalizes the propability of all the Particles to add to 1
@@ -370,7 +325,7 @@ def normalizeAndLineUp(Particles):
         p.normalize(sum)
     nextStartPoint = 0
     for p in Particles:
-        p.lineUp(sum)
+        nextStartPoint += p.lineUp(nextStartPoint)
 
 
 def selectSurvivors(Particles):
@@ -435,9 +390,67 @@ def printMap(Map):
         for j in range(0, Particle.size):
             occ = Map[i][j]
             if occ == 1:
-                stringer += '1'
+                stringer += 'x'
             elif occ == 0:
-                stringer += 'O'
+                stringer += 'o'
             else:
                 stringer += ' '
         print(stringer)
+
+
+# These are my own line function to check
+
+def plotLineX(newMap, x0, x1, y):
+    for x in range(x0, x1, np.sign(x1 - x0)):
+        if x < 0 or x >= Particle.size:
+            return newMap
+        newMap[x][y] = 0
+    return newMap
+
+
+def plotLineY(newMap, y0, y1, x):
+    for y in range(y0, y1, np.sign(y1 - y0)):
+        if y < 0 or y >= Particle.size:
+            return newMap
+        newMap[x][y] = 0
+    return newMap
+
+
+def plotLineXHigh(newMap, x0, x1, y0, y1):
+    error = abs((x0 - x1) / (y0 - y1))
+    Yerror = 0
+    y = y0
+    for x in range(x0, x1, np.sign(x1 - x0)):
+        if x < 0 or x >= Particle.size:
+            return newMap
+        newMap[x][y] = 0
+        Yerror += error
+        if Yerror >= 1:
+            y += np.sign(y1 - y0)
+            if y < 0 or y >= Particle.size:
+                return newMap
+            newMap[x][y] = 0
+            Yerror -= 1
+
+    return newMap
+
+
+def plotLineYHigh(newMap, x0, x1, y0, y1):
+    error = abs((x0 - x1) / (y0 - y1))
+    Xerror = 0
+    x = x0
+    for y in range(y0, y1, np.sign(y1 - y0)):
+        if y < 0 or y >= Particle.size:
+            return newMap
+        newMap[x][y] = 0
+        Xerror += error
+        if Xerror >= 1:
+            x += np.sign(x1 - x0)
+            if x < 0 or x >= Particle.size:
+                return newMap
+            newMap[x][y] = 0
+            Xerror -= 1
+
+    return newMap
+
+
