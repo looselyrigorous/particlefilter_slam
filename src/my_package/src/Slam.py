@@ -13,6 +13,9 @@ a3 = 0.01
 a4 = 0.01
 
 
+
+
+
 class Particle:
     fidelity = 0.1  ###this is the map fidelity(e.g 0.1 means every pixel is 10cm * 10cm)
     size = 101  ### the size of the map (map always is square for now)
@@ -67,11 +70,9 @@ class Particle:
     # Calculates the propability of each pixel in the map
 
     def tilePropability(self, x, y, number):
-        # print(x,y)
-        # print(type(self.propMap))
+        #print(x,y)
+        #print(type(self.propMap))
         if self.propMap[x][y] == -1:
-            if number == 0:
-                print(0)
             self.propMap[x][y] = number
             self.tickMap[x][y] = 1
             return
@@ -100,7 +101,7 @@ class Particle:
                 if newMap[i][j] != -1:
                     sum += self.calcError(newMap, i, j)
 
-        self.prop *= 1 / (sum + 1)
+        self.prop *= 1 / (sum+1)
 
     ##This might need to become square Error of each different pixel
 
@@ -163,10 +164,10 @@ class Particle:
         EndAngle += self.th
         count = 0
         maxCount = len(Points)
-        Dangle = (EndAngle - StartAngle) / maxCount
-
+        Dangle = (EndAngle - StartAngle) /maxCount
+        
         for count in range(0, maxCount):
-            i = StartAngle - (Dangle * count)
+            i = StartAngle + (Dangle * count)
             d = Points[count]
             x1 = 0
             y1 = 0
@@ -182,7 +183,7 @@ class Particle:
             xS, yS = realCoordToGrid(x0, y0)
             xE, yE = realCoordToGrid(x1, y1)
             newMap = self.newTiles(newMap, xS, yS, xE, yE, Wall)
-
+            
         printMap(newMap)
         return newMap
 
@@ -191,20 +192,20 @@ class Particle:
             if y0 == y1:
                 return newMap
             else:
-                newMap = plotLineY(newMap, y0, y1, x1)
+                newMap = plotLineY(newMap,y0,y1,x1)
 
-        elif y0 == y1:
-            newMap = plotLineX(newMap, x0, x1, y1)
-
-        elif (abs(x0 - x1) > abs(y0 - y1)):
-            newMap = plotLineXHigh(newMap, x0, x1, y0, y1)
-
+        elif y0==y1:
+            newMap = plotLineX(newMap,x0,x1,y1)
+        
+        elif (abs(x0-x1)>abs(y0-y1)):
+            newMap = plotLineXHigh(newMap,x0,x1,y0,y1)
+        
         else:
-            newMap = plotLineYHigh(newMap, x0, x1, y0, y1)
+            newMap = plotLineYHigh(newMap,x0,x1,y0,y1)
 
         if Wall == True:
-            print(x0, y0)
-            print(x1, y1)
+            print(x0,y0)
+            print(x1,y1)
             newMap[x1][y1] = 1
 
         return newMap
@@ -266,11 +267,12 @@ def mapUpdate(Particles, StartAngle, EndAngle, Dangle, Points, MaxDepth):
     count = 0
     for p in Particles:
         print(count)
-        count += 1
+        count+=1
         newMap = p.newMapMaker(StartAngle, EndAngle, Dangle, Points, MaxDepth)
         p.calcErrorMap(newMap)
         p.propabilityMapMaker(newMap)
         p.mapMaker()
+
 
 
 # The hitmap is made for kobuki that is about 1 meter in diameter so it doesnt hit its fat body when roaming :)
@@ -327,7 +329,6 @@ def normalizeAndLineUp(Particles):
     for p in Particles:
         nextStartPoint += p.lineUp(nextStartPoint)
 
-
 def selectSurvivors(Particles):
     step = 1 / NoP
     startPoint = random() / Particle.NoP
@@ -382,7 +383,7 @@ def printBestMap(Particles):
             maxProp = p.prop
     map = bestParticle.map
     printMap(map)
-
+    
 
 def printMap(Map):
     for i in range(0, Particle.size):
@@ -398,55 +399,52 @@ def printMap(Map):
         print(stringer)
 
 
-# These are my own line function to check
+# These are my own line function to check 
 
-def plotLineX(newMap, x0, x1, y):
-    for x in range(x0, x1, np.sign(x1 - x0)):
-        if x < 0 or x >= Particle.size:
+def plotLineX(newMap,x0,x1,y):
+    for x in range(x0,x1,np.sign(x1-x0)):
+        if x<0 or x>=Particle.size:
             return newMap
         newMap[x][y] = 0
     return newMap
 
-
-def plotLineY(newMap, y0, y1, x):
-    for y in range(y0, y1, np.sign(y1 - y0)):
-        if y < 0 or y >= Particle.size:
+def plotLineY(newMap,y0,y1,x):
+    for y in range(y0,y1,np.sign(y1-y0)):
+        if y<0 or y>=Particle.size:
             return newMap
         newMap[x][y] = 0
     return newMap
 
-
-def plotLineXHigh(newMap, x0, x1, y0, y1):
-    error = abs((x0 - x1) / (y0 - y1))
+def plotLineXHigh(newMap,x0,x1,y0,y1):
+    error = abs((x0-x1)/(y0-y1))
     Yerror = 0
     y = y0
-    for x in range(x0, x1, np.sign(x1 - x0)):
-        if x < 0 or x >= Particle.size:
+    for x in range(x0,x1 - np.sign(x1-x0),np.sign(x1-x0)):
+        if x<0 or x>=Particle.size:
             return newMap
         newMap[x][y] = 0
-        Yerror += error
-        if Yerror >= 1:
-            y += np.sign(y1 - y0)
-            if y < 0 or y >= Particle.size:
+        Yerror +=error
+        if Yerror>=1:
+            y += np.sign(y1-y0)
+            if y<0 or y>=Particle.size:
                 return newMap
             newMap[x][y] = 0
             Yerror -= 1
 
     return newMap
 
-
-def plotLineYHigh(newMap, x0, x1, y0, y1):
-    error = abs((x0 - x1) / (y0 - y1))
+def plotLineYHigh(newMap,x0,x1,y0,y1):
+    error = abs((x0-x1)/(y0-y1))
     Xerror = 0
     x = x0
-    for y in range(y0, y1, np.sign(y1 - y0)):
-        if y < 0 or y >= Particle.size:
+    for y in range(y0,y1 - np.sign(y1-y0),np.sign(y1-y0)):
+        if y<0 or y>=Particle.size:
             return newMap
         newMap[x][y] = 0
         Xerror += error
-        if Xerror >= 1:
-            x += np.sign(x1 - x0)
-            if x < 0 or x >= Particle.size:
+        if Xerror>=1:
+            x+=np.sign(x1-x0)
+            if x<0 or x>=Particle.size:
                 return newMap
             newMap[x][y] = 0
             Xerror -= 1
