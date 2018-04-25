@@ -39,7 +39,7 @@ def main():
 	global Particles
 	Particles = Slam.initParticles()
 	#Slam.printBestMap(Particles)
-	rospy.Subscriber("/odom",Odometry,odometry)
+	#rospy.Subscriber("/odom",Odometry,odometry)
 	rospy.Subscriber("/scan",LaserScan,scanner)
 	rospy.spin()
 

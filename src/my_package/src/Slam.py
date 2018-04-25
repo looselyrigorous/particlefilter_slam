@@ -203,9 +203,7 @@ class Particle:
         else:
             newMap = plotLineYHigh(newMap,x0,x1,y0,y1)
 
-        if Wall == True:
-            print(x0,y0)
-            print(x1,y1)
+        if Wall == True and x1>0 and x1<=Particle.size and y1>0 and y1<Particle.size:
             newMap[x1][y1] = 1
 
         return newMap
@@ -266,7 +264,6 @@ def odomUpdate(Particles, X, Y, TH):
 def mapUpdate(Particles, StartAngle, EndAngle, Dangle, Points, MaxDepth):
     count = 0
     for p in Particles:
-        print(count)
         count+=1
         newMap = p.newMapMaker(StartAngle, EndAngle, Dangle, Points, MaxDepth)
         p.calcErrorMap(newMap)
@@ -416,10 +413,11 @@ def plotLineY(newMap,y0,y1,x):
     return newMap
 
 def plotLineXHigh(newMap,x0,x1,y0,y1):
-    error = abs((x0-x1)/(y0-y1))
+    error = abs(float(y0 - y1) / float(x0 - x1))
+    #print(error)
     Yerror = 0
     y = y0
-    for x in range(x0,x1 - np.sign(x1-x0),np.sign(x1-x0)):
+    for x in range(x0,x1,np.sign(x1-x0)):
         if x<0 or x>=Particle.size:
             return newMap
         newMap[x][y] = 0
@@ -434,10 +432,10 @@ def plotLineXHigh(newMap,x0,x1,y0,y1):
     return newMap
 
 def plotLineYHigh(newMap,x0,x1,y0,y1):
-    error = abs((x0-x1)/(y0-y1))
+    error = abs(float(x0-x1)/float(y0-y1))
     Xerror = 0
     x = x0
-    for y in range(y0,y1 - np.sign(y1-y0),np.sign(y1-y0)):
+    for y in range(y0,y1,np.sign(y1-y0)):
         if y<0 or y>=Particle.size:
             return newMap
         newMap[x][y] = 0
