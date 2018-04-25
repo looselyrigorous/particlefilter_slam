@@ -165,7 +165,7 @@ class Particle:
         count = 0
         maxCount = len(Points)
         Dangle = (EndAngle - StartAngle) /maxCount
-        
+        nanCount = 0
         for count in range(0, maxCount):
             i = StartAngle + (Dangle * count)
             d = Points[count]
@@ -203,7 +203,7 @@ class Particle:
         else:
             newMap = plotLineYHigh(newMap,x0,x1,y0,y1)
 
-        if Wall == True and x1>0 and x1<=Particle.size and y1>0 and y1<Particle.size:
+        if Wall == True and x1>0 and x1<Particle.size and y1>0 and y1<Particle.size:
             newMap[x1][y1] = 1
 
         return newMap

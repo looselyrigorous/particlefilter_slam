@@ -38,9 +38,10 @@ def main():
 	rospy.init_node('my_package')
 	global Particles
 	Particles = Slam.initParticles()
-	#Slam.printBestMap(Particles)
 	#rospy.Subscriber("/odom",Odometry,odometry)
-	rospy.Subscriber("/scan",LaserScan,scanner)
+	rospy.Subscriber("/kobuki/laser/scan",LaserScan,scanner)
+
+	#rospy.Subscriber("/scan",LaserScan,scanner)
 	rospy.spin()
 
 if __name__ == '__main__':
