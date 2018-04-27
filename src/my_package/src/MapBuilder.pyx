@@ -13,6 +13,8 @@ cdef int Psize = Particle.size
 
 
 cpdef np.ndarray[int,ndim=2] plotLineX(np.ndarray[int,ndim = 2] newMap,int x0,int x1,int y):
+    # Cython speed-up implementation
+
     cdef int x
     cdef int step = sign(x1-x0)
 
@@ -25,6 +27,7 @@ cpdef np.ndarray[int,ndim=2] plotLineX(np.ndarray[int,ndim = 2] newMap,int x0,in
         if x>=0 and x<Psize:
             xS = x
             break
+    #################################
 
     for x in range(xS,x1):
         if x<0 or x>=Psize:
@@ -34,6 +37,8 @@ cpdef np.ndarray[int,ndim=2] plotLineX(np.ndarray[int,ndim = 2] newMap,int x0,in
     return newMap
 
 cpdef np.ndarray[int,ndim = 2] plotLineY(np.ndarray[int,ndim = 2] newMap,int x,int y0,int y1):
+    # Cython speed-up implementation
+
     cdef int y
     cdef int step = sign(y1-y0)
 
@@ -46,6 +51,7 @@ cpdef np.ndarray[int,ndim = 2] plotLineY(np.ndarray[int,ndim = 2] newMap,int x,i
         if y>=0 and y<Psize:
             yS = y
             break
+    ################################
 
     for y in range(yS,y1):
         if y<0 or y>=Psize:
@@ -55,8 +61,12 @@ cpdef np.ndarray[int,ndim = 2] plotLineY(np.ndarray[int,ndim = 2] newMap,int x,i
     return newMap
 
 cpdef np.ndarray[int,ndim = 2] plotLineXHigh(np.ndarray[int,ndim = 2] newMap,int x0,int x1,int y0,int y1):
+
     cdef int step = sign(x1-x0)
     cdef float error = abs(float(y0 - y1) / float(x0 - x1))
+
+    #Cython speed-up implementation
+
     cdef float Yerror = 0
     if step == -1:
         x0,x1 = x1,x0
@@ -83,6 +93,8 @@ cpdef np.ndarray[int,ndim = 2] plotLineXHigh(np.ndarray[int,ndim = 2] newMap,int
         if Xflag and Yflag:
             xS = x
 
+    ###########################
+
     for x in range(xS,x1):
         if x<0 or x>=Psize:
             return newMap
@@ -102,6 +114,7 @@ cpdef np.ndarray[int,ndim = 2] plotLineYHigh(np.ndarray[int,ndim = 2] newMap,int
     cdef float Xerror = 0
     cdef int step = sign(y1-y0)
 
+    # Cython Speed-up Implementation
     if step == -1:
         y0,y1 = y1,y0
         x0,x1 = x1,x0
@@ -128,6 +141,9 @@ cpdef np.ndarray[int,ndim = 2] plotLineYHigh(np.ndarray[int,ndim = 2] newMap,int
 
         if Xflag and Yflag:
             yS = y
+
+    #################################
+
 
     for y in range(yS,y1):
         if y<0 or y>=Psize:
