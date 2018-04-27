@@ -6,14 +6,13 @@ from scipy.stats import norm
 import numpy as np
 from copy import deepcopy
 from math import atan2
+import mapBuilder
+
 
 a1 = 0.01
 a2 = 0.01
 a3 = 0.01
 a4 = 0.01
-
-
-
 
 
 class Particle:
@@ -41,9 +40,9 @@ class Particle:
 
     def moveParticle(self, drot1, dtrans, drot2):
 
-        sgm1 = a1 * drot1 + a2 * dtrans
-        sgm2 = a3 * dtrans + a4 * (drot2 + drot1)
-        sgm3 = a1 * drot2 + a2 * dtrans
+        sgm1 = abs(a1 * drot1 + a2 * dtrans)
+        sgm2 = abs(a3 * dtrans + a4 * (drot2 + drot1))
+        sgm3 = abs(a1 * drot2 + a2 * dtrans)
 
         dev1 = normal(0, sgm1)
         dev2 = normal(0, sgm2)
@@ -53,9 +52,9 @@ class Particle:
         dtranse = dtrans + dev2
         drote2 = drot2 + dev3
 
-        self.x = x + dtranse * cos(self.th + drote1)
-        self.y = y + dtranse * sin(self.th + drote1)
-        self.th = self.th + drote1 + drote2
+        self.x += dtranse * cos(self.th + drote1)
+        self.y += dtranse * sin(self.th + drote1)
+        self.th += drote1 + drote2
 
         self.prop = norm(0, sgm1).pdf(dev1) * norm(0, sgm2).pdf(dev2) * norm(0, sgm3).pdf(dev3)
 
@@ -70,8 +69,6 @@ class Particle:
     # Calculates the propability of each pixel in the map
 
     def tilePropability(self, x, y, number):
-        #print(x,y)
-        #print(type(self.propMap))
         if self.propMap[x][y] == -1:
             self.propMap[x][y] = number
             self.tickMap[x][y] = 1
@@ -184,7 +181,6 @@ class Particle:
             xE, yE = realCoordToGrid(x1, y1)
             newMap = self.newTiles(newMap, xS, yS, xE, yE, Wall)
             
-        printMap(newMap)
         return newMap
 
     def newTiles(self, newMap, x0, y0, x1, y1, Wall):
@@ -414,7 +410,6 @@ def plotLineY(newMap,y0,y1,x):
 
 def plotLineXHigh(newMap,x0,x1,y0,y1):
     error = abs(float(y0 - y1) / float(x0 - x1))
-    #print(error)
     Yerror = 0
     y = y0
     for x in range(x0,x1,np.sign(x1-x0)):
