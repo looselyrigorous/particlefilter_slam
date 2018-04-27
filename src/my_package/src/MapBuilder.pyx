@@ -1,12 +1,12 @@
 from numpy import sign
-from Slam import Particle
+import Slam as Slam
 import numpy as np
 cimport cython
 cimport numpy as np
 
 
 
-cdef int Psize = Particle.size
+cdef int Psize = Slam.mapSize
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -32,7 +32,7 @@ cpdef np.ndarray[int,ndim=2] plotLineX(np.ndarray[int,ndim = 2] newMap,int x0,in
     for x in range(xS,x1):
         if x<0 or x>=Psize:
             return newMap
-        newMap[x][y] = 0
+        newMap[x,y] = 0
 
     return newMap
 
@@ -56,7 +56,7 @@ cpdef np.ndarray[int,ndim = 2] plotLineY(np.ndarray[int,ndim = 2] newMap,int x,i
     for y in range(yS,y1):
         if y<0 or y>=Psize:
             return newMap
-        newMap[x][y] = 0
+        newMap[x,y] = 0
 
     return newMap
 
@@ -98,13 +98,13 @@ cpdef np.ndarray[int,ndim = 2] plotLineXHigh(np.ndarray[int,ndim = 2] newMap,int
     for x in range(xS,x1):
         if x<0 or x>=Psize:
             return newMap
-        newMap[x][y] = 0
+        newMap[x,y] = 0
         Yerror +=error
         if Yerror>=1:
             y += Ystep
             if y<0 or y>=Psize:
                 return newMap
-            newMap[x][y] = 0
+            newMap[x,y] = 0
             Yerror -= 1
     return newMap
 
@@ -148,13 +148,13 @@ cpdef np.ndarray[int,ndim = 2] plotLineYHigh(np.ndarray[int,ndim = 2] newMap,int
     for y in range(yS,y1):
         if y<0 or y>=Psize:
             return newMap
-        newMap[x][y] = 0
+        newMap[x,y] = 0
         Xerror += error
         if Xerror>=1:
             x+=Xstep
             if x<0 or x>=Psize:
                 return newMap
-            newMap[x][y] = 0
+            newMap[x,y] = 0
             Xerror -= 1
 
     return newMap

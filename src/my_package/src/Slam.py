@@ -6,9 +6,11 @@ from scipy.stats import norm
 import numpy as np
 from copy import deepcopy
 from math import atan2
-import mapBuilder
 
 
+mapSize = 101
+
+import MapBuilder
 a1 = 0.01
 a2 = 0.01
 a3 = 0.01
@@ -17,7 +19,6 @@ a4 = 0.01
 
 class Particle:
     fidelity = 0.1  ###this is the map fidelity(e.g 0.1 means every pixel is 10cm * 10cm)
-    size = 101  ### the size of the map (map always is square for now)
     genX = 0.0  ### this is the ros prediction for its pos
     genY = 0.0
     genTH = 0.0
@@ -28,13 +29,10 @@ class Particle:
         self.x = x
         self.y = y
         self.th = th
-        self.map = deepcopy(
-            map)  ### The map as calculated via the propMap (if propability >=0.5 then pixel is black if propability <0.5 pixel is white else gray)
+        self.map = map.copy() ### The map as calculated via the propMap (if propability >=0.5 then pixel is black if propability <0.5 pixel is white else gray)
         self.prop = prop  ### A number that is the propability of this Particle to be perfectly in line with our external model of space reality
-        self.propMap = deepcopy(
-            propMap)  ##This is the map that holds the propabilities of every square mathematically [0,1]
-        self.tickMap = deepcopy(
-            tickMap)  ##TickMap is a map that shows how many times have each square seperately being *seen*
+        self.propMap = propMap.copy() ##This is the map that holds the propabilities of every square mathematically [0,1]
+        self.tickMap = tickMap.copy()  ##TickMap is a map that shows how many times have each square seperately being *seen*
 
     ##Calculates particle position and propability of that position
 
@@ -61,41 +59,41 @@ class Particle:
     # Calculates the newPropabilityMap
 
     def propabilityMapMaker(self, newMap):
-        for i in range(0, Particle.size):
-            for j in range(0, Particle.size):
-                if newMap[i][j] != -1:
-                    self.tilePropability(i, j, newMap[i][j])
+        for i in range(0, mapSize):
+            for j in range(0, mapSize):
+                if newMap[i,j] != -1:
+                    self.tilePropability(i, j, newMap[i,j])
 
     # Calculates the propability of each pixel in the map
 
     def tilePropability(self, x, y, number):
-        if self.propMap[x][y] == -1:
-            self.propMap[x][y] = number
-            self.tickMap[x][y] = 1
+        if self.propMap[x,y] == -1:
+            self.propMap[x,y] = number
+            self.tickMap[x,y] = 1
             return
 
-        self.propMap[x][y] *= self.tickMap[x][y]
-        self.propMap[x][y] += number
-        self.tickMap[x][y] += 1
-        self.propMap[x][y] /= self.tickMap[x][y]
+        self.propMap[x,y] *= self.tickMap[x,y]
+        self.propMap[x,y] += number
+        self.tickMap[x,y] += 1
+        self.propMap[x,y] /= self.tickMap[x,y]
 
     # Calculates the new Map
 
     def mapMaker(self):
-        for i in range(0, Particle.size):
-            for j in range(0, Particle.size):
-                self.TileMaker(i, j, self.propMap[i][j])
+        for i in range(0, mapSize):
+            for j in range(0, mapSize):
+                self.TileMaker(i, j, self.propMap[i,j])
 
     def TileMaker(self, x, y, prop):
-        self.map[x][y] = round(prop)
+        self.map[x,y] = round(prop)
 
     # Calculates the absolute error of the Map and the newMap
 
     def calcErrorMap(self, newMap):
         sum = 0
-        for i in range(0, Particle.size):
-            for j in range(0, Particle.size):
-                if newMap[i][j] != -1:
+        for i in range(0, mapSize):
+            for j in range(0, mapSize):
+                if newMap[i,j] != -1:
                     sum += self.calcError(newMap, i, j)
 
         self.prop *= 1 / (sum+1)
@@ -103,7 +101,7 @@ class Particle:
     ##This might need to become square Error of each different pixel
 
     def calcError(self, newMap, x0, y0):
-        for i in range(0, 2 * Particle.size):
+        for i in range(0, 2 * mapSize):
             if self.calcErrorRadius(newMap, x0, y0, i) == True:
                 return i
 
@@ -122,14 +120,14 @@ class Particle:
         count = 0
 
         while x >= y:
-            count += self.checkSimilarity(newMap[x0][y0], x0 + x, y0 + y)
-            count += self.checkSimilarity(newMap[x0][y0], x0 + x, y0 - y)
-            count += self.checkSimilarity(newMap[x0][y0], x0 - x, y0 + y)
-            count += self.checkSimilarity(newMap[x0][y0], x0 - x, y0 - y)
-            count += self.checkSimilarity(newMap[x0][y0], x0 + y, y0 + x)
-            count += self.checkSimilarity(newMap[x0][y0], x0 + y, y0 - x)
-            count += self.checkSimilarity(newMap[x0][y0], x0 - y, y0 + x)
-            count += self.checkSimilarity(newMap[x0][y0], x0 - y, y0 - x)
+            count += self.checkSimilarity(newMap[x0,y0], x0 + x, y0 + y)
+            count += self.checkSimilarity(newMap[x0,y0], x0 + x, y0 - y)
+            count += self.checkSimilarity(newMap[x0,y0], x0 - x, y0 + y)
+            count += self.checkSimilarity(newMap[x0,y0], x0 - x, y0 - y)
+            count += self.checkSimilarity(newMap[x0,y0], x0 + y, y0 + x)
+            count += self.checkSimilarity(newMap[x0,y0], x0 + y, y0 - x)
+            count += self.checkSimilarity(newMap[x0,y0], x0 - y, y0 + x)
+            count += self.checkSimilarity(newMap[x0,y0], x0 - y, y0 - x)
 
             if count > 0:
                 return True
@@ -146,15 +144,16 @@ class Particle:
         return False
 
     def checkSimilarity(self, checkPoint, x, y):
-        if x < Particle.size and x >= 0 and y < Particle.size and y >= 0:
-            if checkPoint == self.map[x][y]:
+        if x < mapSize and x >= 0 and y < mapSize and y >= 0:
+            if checkPoint == self.map[x,y]:
                 return 1
             else:
                 return 0
         return 0
 
     def newMapMaker(self, StartAngle, EndAngle, Dangle, Points, MaxDepth):
-        newMap = [[-1] * Particle.size for i in range(Particle.size)]
+        newMap = np.ndarray(shape = (mapSize,mapSize),dtype = float)
+        newMap.fill(-1)
         x0 = self.x
         y0 = self.y
         StartAngle += self.th
@@ -199,8 +198,8 @@ class Particle:
         else:
             newMap = plotLineYHigh(newMap,x0,x1,y0,y1)
 
-        if Wall == True and x1>0 and x1<Particle.size and y1>0 and y1<Particle.size:
-            newMap[x1][y1] = 1
+        if Wall == True and x1>0 and x1<mapSize and y1>0 and y1<mapSize:
+            newMap[x1,y1] = 1
 
         return newMap
 
@@ -240,9 +239,12 @@ def initParticles():
     x = 0
     y = 0
     th = 0
-    map = [[-1] * Particle.size for i in range(Particle.size)]
-    propMap = deepcopy(map)
-    tickMap = [[0] * Particle.size for i in range(Particle.size)]
+    map = np.ndarray(shape = (mapSize,mapSize),dtype = np.int)
+    map.fill(-1)
+    propMap = np.ndarray(shape = (mapSize,mapSize),dtype = np.float)
+    propMap.fill(-1.0)
+    tickMap = np.ndarray(shape=(mapSize, mapSize), dtype=np.int)
+    tickMap.fill(0)
     for i in range(0, Particle.NoP):
         Particles.append(Particle(x, y, th, map, 1, propMap, tickMap))
     return Particles
@@ -265,7 +267,7 @@ def mapUpdate(Particles, StartAngle, EndAngle, Dangle, Points, MaxDepth):
         p.calcErrorMap(newMap)
         p.propabilityMapMaker(newMap)
         p.mapMaker()
-
+        printMap(newMap)
 
 
 # The hitmap is made for kobuki that is about 1 meter in diameter so it doesnt hit its fat body when roaming :)
@@ -278,18 +280,19 @@ def hitMapUpdate(Particles):
             bestParticle = p
             maxProp = p.prop
 
-    hitmap = [[0] * Particle.size for i in range(Particle.size)]
+    hitmap = np.ndarray(shape = (mapSize,mapSize),dtype = int)
+    hitmap.fill(-1)
     map = bestParticle.map
-    for i in range(0, Particle.size):
-        for j in range(0, Particle.size):
-            tile = map[i][j]
+    for i in range(0, mapSize):
+        for j in range(0, mapSize):
+            tile = map[i,j]
             if tile == 1:
                 for k in range(0, 5):
                     for l in range(0, 5):
                         x = i + k
                         y = j + l
-                        if x >= 0 and x < Particle.size and y >= 0 and y < Particle.size:
-                            hitmap[x][y] = 1
+                        if x >= 0 and x < mapSize and y >= 0 and y < mapSize:
+                            hitmap[x,y] = 1
 
     Particle.hitmap = hitmap
 
@@ -302,8 +305,8 @@ def realCoordToGrid(x, y):
     x *= 2 / Particle.fidelity
     y *= 2 / Particle.fidelity
 
-    x += (Particle.size - 1) / 2
-    y += (Particle.size - 1) / 2
+    x += (mapSize - 1) / 2
+    y += (mapSize - 1) / 2
 
     return int(math.floor(x)), int(math.floor(y))
 
@@ -379,10 +382,10 @@ def printBestMap(Particles):
     
 
 def printMap(Map):
-    for i in range(0, Particle.size):
+    for i in range(0, mapSize):
         stringer = ''
-        for j in range(0, Particle.size):
-            occ = Map[i][j]
+        for j in range(0, mapSize):
+            occ = Map[i,j]
             if occ == 1:
                 stringer += 'x'
             elif occ == 0:
@@ -396,16 +399,16 @@ def printMap(Map):
 
 def plotLineX(newMap,x0,x1,y):
     for x in range(x0,x1,np.sign(x1-x0)):
-        if x<0 or x>=Particle.size:
+        if x<0 or x>=mapSize:
             return newMap
-        newMap[x][y] = 0
+        newMap[x,y] = 0
     return newMap
 
 def plotLineY(newMap,y0,y1,x):
     for y in range(y0,y1,np.sign(y1-y0)):
-        if y<0 or y>=Particle.size:
+        if y<0 or y>=mapSize:
             return newMap
-        newMap[x][y] = 0
+        newMap[x,y] = 0
     return newMap
 
 def plotLineXHigh(newMap,x0,x1,y0,y1):
@@ -413,15 +416,15 @@ def plotLineXHigh(newMap,x0,x1,y0,y1):
     Yerror = 0
     y = y0
     for x in range(x0,x1,np.sign(x1-x0)):
-        if x<0 or x>=Particle.size:
+        if x<0 or x>=mapSize:
             return newMap
-        newMap[x][y] = 0
+        newMap[x,y] = 0
         Yerror +=error
         if Yerror>=1:
             y += np.sign(y1-y0)
-            if y<0 or y>=Particle.size:
+            if y<0 or y>=mapSize:
                 return newMap
-            newMap[x][y] = 0
+            newMap[x,y] = 0
             Yerror -= 1
 
     return newMap
@@ -431,15 +434,15 @@ def plotLineYHigh(newMap,x0,x1,y0,y1):
     Xerror = 0
     x = x0
     for y in range(y0,y1,np.sign(y1-y0)):
-        if y<0 or y>=Particle.size:
+        if y<0 or y>=mapSize:
             return newMap
-        newMap[x][y] = 0
+        newMap[x,y] = 0
         Xerror += error
         if Xerror>=1:
             x+=np.sign(x1-x0)
-            if x<0 or x>=Particle.size:
+            if x<0 or x>=mapSize:
                 return newMap
-            newMap[x][y] = 0
+            newMap[x,y] = 0
             Xerror -= 1
 
     return newMap

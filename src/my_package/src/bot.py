@@ -38,7 +38,7 @@ def main():
 	global Particles
 	Particles = Slam.initParticles()
 	#rospy.Subscriber("/odom",Odometry,odometry)
-	rospy.Subscriber("/kobuki/laser/scan",LaserScan,scanner)
+	#rospy.Subscriber("/kobuki/laser/scan",LaserScan,scanner)
 
 	rospy.Subscriber("/scan",LaserScan,scanner)
 	rospy.spin()
