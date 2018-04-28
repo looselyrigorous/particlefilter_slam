@@ -35,7 +35,7 @@ def scanner(msg):
     angle_incr = msg.angle_increment
     range_max = msg.range_max
     measurements = np.asarray(msg.ranges)
-    mp.map_update(mb.plot_all_lines, Particles, angle_min, angle_max, angle_incr, measurements, range_max)
+    mp.map_update(mb.plot_all_lines, mb.prop_map_update, Particles, angle_min, angle_max, angle_incr, measurements, range_max)
 
     global kapp
     kapp += 1

@@ -320,7 +320,7 @@ def normalizeAndLineUp(Particles):
         p.normalize(sum)
     nextStartPoint = 0
     for p in Particles:
-        nextStartPoint += p.lineUp(nextStartPoint)
+        nextStartPoint += p.line_up(nextStartPoint)
 
 
 def selectSurvivors(Particles):

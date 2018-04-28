@@ -29,8 +29,10 @@ class Particle:
         self.th = th
         self.prop = prop
         self.grid = grid.copy()
-        self.propMap = prop_map.copy()
-        self.tickMap = tick_map.copy()
+        self.prop_map = prop_map.copy()
+        self.tick_map = tick_map.copy()
+        self.line_start = 0
+        self.line_end = 0
 
     def move_particle(self, drot1, dtrans, drot2):
         a1 = Particle.a1
@@ -68,6 +70,22 @@ class Particle:
             Particle.count = 0
         return merger_map
 
+    def prop_map_maker(self, func, merger_map):
+        self.prop_map = func(self.prop_map, self.tick_map,merger_map)
+
+    def line_up(self, start):
+        self.line_start = start
+        self.line_end = start + self.prop
+        return line_end
+
+    def survive(self, number):
+        if number >= self.line_start and number < self.line_end:
+            return True
+        return False
+
+    def procreate(self):
+        return Particle(self.x, self.y, self.th, self.map, self.prop, self.propMap, self.tickMap)
+
 
 def init_particles():
     Particles = list()
@@ -85,11 +103,12 @@ def init_particles():
     return Particles
 
 
-def map_update(func, Particles, start_angle, end_angle, angle_incr, ranges, max_depth):
+def map_update(merge_map_func, prop_map_func, Particles, start_angle, end_angle, angle_incr, ranges, max_depth):
     count = 0
     for p in Particles:
         count += 1
-        merger_map = p.merge_map_maker(func, start_angle, end_angle, angle_incr, ranges, max_depth)
+        merger_map = p.merge_map_maker(merge_map_func, start_angle, end_angle, angle_incr, ranges, max_depth)
+        p.prop_map_maker(prop_map_func, merger_map)
     return merger_map
 
 

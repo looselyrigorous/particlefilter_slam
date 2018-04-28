@@ -2,6 +2,13 @@ import numpy as np
 cimport numpy as np
 from libc.math cimport isnan,INFINITY
 
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.nonecheck(False)
+@cython.cdivision(True)
+
+
 ###This patches scan nans
 
 cpdef np.ndarray[dtype = double, ndim=1] trump_walling(np.ndarray[dtype = double, ndim=1] ranges,int distance):
