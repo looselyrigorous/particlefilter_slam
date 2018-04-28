@@ -55,7 +55,7 @@ class Particle:
 
     # The function must have in
 
-    def merg_map_maker(self, func, start_angle, end_angle, angle_incr, ranges, max_depth):
+    def merge_map_maker(self, func, start_angle, end_angle, angle_incr, ranges, max_depth):
         merger_map = func(self.x, self.y, self.th, start_angle, end_angle,
                           angle_incr, ranges, max_depth, Particle.sizeX, Particle.sizeY,Particle.fidelity)
         mb.print_map(merger_map)
@@ -80,8 +80,8 @@ def mapUpdate(func,Particles, StartAngle, EndAngle, Dangle, Points, MaxDepth):
     count = 0
     for p in Particles:
         count+=1
-        newMap = p.merg_map_maker(func,StartAngle, EndAngle, Dangle, Points, MaxDepth)
-    return newMap
+        merger_map = p.merge_map_maker(func, StartAngle, EndAngle, Dangle, Points, MaxDepth)
+    return merger_map
 
 def coord_to_grid_coord(x, y):
 
@@ -92,3 +92,22 @@ def coord_to_grid_coord(x, y):
     y += (Particle.sizeY - 1) / 2
 
     return int(math.floor(x)), int(math.floor(y))
+
+
+def quaternion_to_euler_angle(w, x, y, z):
+    ysqr = y * y
+
+    t0 = +2.0 * (w * x + y * z)
+    t1 = +1.0 - 2.0 * (x * x + ysqr)
+    X = math.degrees(math.atan2(t0, t1))
+
+    t2 = +2.0 * (w * y - z * x)
+    t2 = +1.0 if t2 > +1.0 else t2
+    t2 = -1.0 if t2 < -1.0 else t2
+    Y = math.degrees(math.asin(t2))
+
+    t3 = +2.0 * (w * z + x * y)
+    t4 = +1.0 - 2.0 * (ysqr + z * z)
+    Z = math.degrees(math.atan2(t3, t4))
+
+    return X, Y, Z

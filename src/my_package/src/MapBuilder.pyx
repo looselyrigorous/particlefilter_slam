@@ -2,7 +2,7 @@ from numpy import sign
 cimport numpy as np
 import numpy as np
 cimport cython
-from libc.math cimport floor, isnan, sin, cos,INFINITY,signbit
+from libc.math cimport floor, isnan, sin, cos,INFINITY
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.nonecheck(False)
@@ -130,7 +130,7 @@ cdef np.ndarray[dtype = np.int64_t,ndim = 2] plot_lineX_high(np.ndarray[dtype = 
     cdef int y = y0
     cdef int x
 
-    if step==-1:
+    if step == -1:
         for x in range(x0,x1,-1):
             if x<0 or x>=PsizeX:
                 return newMap
