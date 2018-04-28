@@ -12,6 +12,7 @@ class Particle:
     a2 = 0.0001
     a3 = 0.0001
     a4 = 0.0001
+    count = 0
 
     fidelity = 0.1  # this is the map fidelity(e.g 0.1 means every pixel is 10cm * 10cm)
     genX = 0.0  # this is the ros prediction for its pos
@@ -60,7 +61,11 @@ class Particle:
     def merge_map_maker(self, func, start_angle, end_angle, angle_incr, ranges, max_depth):
         merger_map = func(self.x, self.y, self.th, start_angle, end_angle,
                           angle_incr, ranges, max_depth, Particle.sizeX, Particle.sizeY, Particle.fidelity)
-        mb.print_map(merger_map)
+        if Particle.count == 0:
+            mb.print_map(merger_map)
+        Particle.count += 1
+        if Particle.count == 21:
+            Particle.count = 0
         return merger_map
 
 
@@ -122,7 +127,7 @@ def coord_to_grid_coord(x, y):
     return int(math.floor(x)), int(math.floor(y))
 
 
-def quaternion_to_euler_angle(w, x, y, z):
+def quaternion_to_radians(w, x, y, z):
     ysqr = y * y
 
     t0 = +2.0 * (w * x + y * z)
@@ -138,4 +143,4 @@ def quaternion_to_euler_angle(w, x, y, z):
     t4 = +1.0 - 2.0 * (ysqr + z * z)
     Z = math.degrees(math.atan2(t3, t4))
 
-    return X, Y, Z
+    return np.deg2rad(X)%2*np.pi, np.deg2rad(Y)%2*np.pi, np.deg2rad(Z)%2*np.pi

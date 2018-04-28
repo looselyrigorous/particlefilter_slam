@@ -21,8 +21,8 @@ def odometry(msg):
     y = msg.pose.pose.orientation.y
     z = msg.pose.pose.orientation.z
     w = msg.pose.pose.orientation.w
-    w, p, th = mp.quaternion_to_euler_angle(w, x, y, z)
-
+    w, p, th = mp.quaternion_to_radians(w, x, y, z)
+    print(th)
     mp.odom_update(Particles, x1, y1, th)
 
 
@@ -50,10 +50,10 @@ def main():
     rospy.init_node('my_package')
     global Particles
     Particles = mp.init_particles()
-    # rospy.Subscriber("/kobuki/laser/scan",LaserScan,scanner)
+    #rospy.Subscriber("/kobuki/laser/scan",LaserScan,scanner)
 
     rospy.Subscriber("/scan", LaserScan, scanner)
-    #rospy.Subscriber("/odom",Odometry,odometry)
+    rospy.Subscriber("/odom",Odometry,odometry)
     rospy.spin()
 
 

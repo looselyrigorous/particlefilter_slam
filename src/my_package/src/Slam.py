@@ -13,7 +13,7 @@ a2 = 0.01
 a3 = 0.01
 a4 = 0.01
 
-
+count = 0
 class Particle:
     fidelity = 0.1  ###this is the map fidelity(e.g 0.1 means every pixel is 10cm * 10cm)
     genX = 0.0  ### this is the ros prediction for its pos
