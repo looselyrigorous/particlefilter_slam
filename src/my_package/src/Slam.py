@@ -160,7 +160,6 @@ class Particle:
         count = 0
         maxCount = len(Points)
         Dangle = (EndAngle - StartAngle) /maxCount
-        nanCount = 0
         for count in range(0, maxCount):
             i = StartAngle + (Dangle * count)
             d = Points[count]

@@ -1,6 +1,7 @@
 from numpy import sin, cos
 from numpy.random import normal, random
 from scipy.stats import norm
+import numpy as np
 import MapBuilder as mb
 import math
 
@@ -14,11 +15,10 @@ class Particle:
     genX = 0.0  # this is the ros prediction for its pos
     genY = 0.0
     genTH = 0.0
-    NoP = 1  # Number of Particles
+    NoP = 1 # Number of Particles
     hitmap = None
     sizeX = 101
     sizeY = 111
-
 
     def __init__(self, x, y, th, grid, prop, prop_map, tick_map):
         self.x = x
@@ -56,8 +56,32 @@ class Particle:
     # The function must have in
 
     def merg_map_maker(self, func, start_angle, end_angle, angle_incr, ranges, max_depth):
-        merger_map = func(self.x, self.y, self.th, start_angle, end_angle, angle_incr, ranges, max_depth)
+        merger_map = func(self.x, self.y, self.th, start_angle, end_angle,
+                          angle_incr, ranges, max_depth, Particle.sizeX, Particle.sizeY,Particle.fidelity)
+        mb.print_map(merger_map)
         return merger_map
+
+def initParticles():
+    Particles = list()
+    x = 0
+    y = 0
+    th = 0
+    grid = np.ndarray(shape=(Particle.sizeX,Particle.sizeY), dtype=np.int)
+    grid.fill(-1)
+    prop_map = np.ndarray(shape=(Particle.sizeX,Particle.sizeY), dtype=np.float)
+    prop_map.fill(-1.0)
+    tick_map = np.ndarray(shape=(Particle.sizeX, Particle.sizeY), dtype=np.int)
+    tick_map.fill(0)
+    for i in range(0, Particle.NoP):
+        Particles.append(Particle(x, y, th, grid, 1, prop_map, tick_map))
+    return Particles
+
+def mapUpdate(func,Particles, StartAngle, EndAngle, Dangle, Points, MaxDepth):
+    count = 0
+    for p in Particles:
+        count+=1
+        newMap = p.merg_map_maker(func,StartAngle, EndAngle, Dangle, Points, MaxDepth)
+    return newMap
 
 def coord_to_grid_coord(x, y):
 
