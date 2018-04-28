@@ -16,4 +16,8 @@ Then to run the program (hopefully you know how to start a gazebo in ros)
 
 Press rosrun my_package bot.py
 
+bot.py now work for turtlebot in gazebo with scanner in /scan (if you want kobuki
+you must manually change it to /kobuki/laser/scan that is also a commented line)
+
+
 More to come :)
