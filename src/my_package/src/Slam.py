@@ -6,11 +6,9 @@ from scipy.stats import norm
 import numpy as np
 from copy import deepcopy
 from math import atan2
-
-
-mapSize = 101
-
 import MapBuilder
+
+
 a1 = 0.01
 a2 = 0.01
 a3 = 0.01
@@ -24,6 +22,7 @@ class Particle:
     genTH = 0.0
     NoP = 1  ### Number of Particles
     hitmap = None
+    size = 101
 
     def __init__(self, x, y, th, map, prop, propMap, tickMap):
         self.x = x
@@ -59,8 +58,8 @@ class Particle:
     # Calculates the newPropabilityMap
 
     def propabilityMapMaker(self, newMap):
-        for i in range(0, mapSize):
-            for j in range(0, mapSize):
+        for i in range(0, Particle.size):
+            for j in range(0, Particle.size):
                 if newMap[i,j] != -1:
                     self.tilePropability(i, j, newMap[i,j])
 
@@ -80,8 +79,8 @@ class Particle:
     # Calculates the new Map
 
     def mapMaker(self):
-        for i in range(0, mapSize):
-            for j in range(0, mapSize):
+        for i in range(0, Particle.size):
+            for j in range(0, Particle.size):
                 self.TileMaker(i, j, self.propMap[i,j])
 
     def TileMaker(self, x, y, prop):
@@ -91,8 +90,8 @@ class Particle:
 
     def calcErrorMap(self, newMap):
         sum = 0
-        for i in range(0, mapSize):
-            for j in range(0, mapSize):
+        for i in range(0, Particle.size):
+            for j in range(0, Particle.size):
                 if newMap[i,j] != -1:
                     sum += self.calcError(newMap, i, j)
 
@@ -101,7 +100,7 @@ class Particle:
     ##This might need to become square Error of each different pixel
 
     def calcError(self, newMap, x0, y0):
-        for i in range(0, 2 * mapSize):
+        for i in range(0, 2 * Particle.size):
             if self.calcErrorRadius(newMap, x0, y0, i) == True:
                 return i
 
@@ -144,7 +143,7 @@ class Particle:
         return False
 
     def checkSimilarity(self, checkPoint, x, y):
-        if x < mapSize and x >= 0 and y < mapSize and y >= 0:
+        if x < Particle.size and x >= 0 and y < Particle.size and y >= 0:
             if checkPoint == self.map[x,y]:
                 return 1
             else:
@@ -152,7 +151,7 @@ class Particle:
         return 0
 
     def newMapMaker(self, StartAngle, EndAngle, Dangle, Points, MaxDepth):
-        newMap = np.ndarray(shape = (mapSize,mapSize),dtype = float)
+        newMap = np.ndarray(shape = (Particle.size,Particle.size),dtype = float)
         newMap.fill(-1)
         x0 = self.x
         y0 = self.y
@@ -198,7 +197,7 @@ class Particle:
         else:
             newMap = plotLineYHigh(newMap,x0,x1,y0,y1)
 
-        if Wall == True and x1>0 and x1<mapSize and y1>0 and y1<mapSize:
+        if Wall == True and x1>0 and x1<Particle.size and y1>0 and y1<Particle.size:
             newMap[x1,y1] = 1
 
         return newMap
@@ -239,11 +238,11 @@ def initParticles():
     x = 0
     y = 0
     th = 0
-    map = np.ndarray(shape = (mapSize,mapSize),dtype = np.int)
+    map = np.ndarray(shape = (Particle.size,Particle.size),dtype = np.int)
     map.fill(-1)
-    propMap = np.ndarray(shape = (mapSize,mapSize),dtype = np.float)
+    propMap = np.ndarray(shape = (Particle.size,Particle.size),dtype = np.float)
     propMap.fill(-1.0)
-    tickMap = np.ndarray(shape=(mapSize, mapSize), dtype=np.int)
+    tickMap = np.ndarray(shape=(Particle.size, Particle.size), dtype=np.int)
     tickMap.fill(0)
     for i in range(0, Particle.NoP):
         Particles.append(Particle(x, y, th, map, 1, propMap, tickMap))
@@ -280,18 +279,18 @@ def hitMapUpdate(Particles):
             bestParticle = p
             maxProp = p.prop
 
-    hitmap = np.ndarray(shape = (mapSize,mapSize),dtype = int)
+    hitmap = np.ndarray(shape = (Particle.size,Particle.size),dtype = int)
     hitmap.fill(-1)
     map = bestParticle.map
-    for i in range(0, mapSize):
-        for j in range(0, mapSize):
+    for i in range(0, Particle.size):
+        for j in range(0, Particle.size):
             tile = map[i,j]
             if tile == 1:
                 for k in range(0, 5):
                     for l in range(0, 5):
                         x = i + k
                         y = j + l
-                        if x >= 0 and x < mapSize and y >= 0 and y < mapSize:
+                        if x >= 0 and x < Particle.size and y >= 0 and y < Particle.size:
                             hitmap[x,y] = 1
 
     Particle.hitmap = hitmap
@@ -305,8 +304,8 @@ def realCoordToGrid(x, y):
     x *= 2 / Particle.fidelity
     y *= 2 / Particle.fidelity
 
-    x += (mapSize - 1) / 2
-    y += (mapSize - 1) / 2
+    x += (Particle.size - 1) / 2
+    y += (Particle.size - 1) / 2
 
     return int(math.floor(x)), int(math.floor(y))
 
@@ -382,9 +381,9 @@ def printBestMap(Particles):
     
 
 def printMap(Map):
-    for i in range(0, mapSize):
+    for i in range(0, Particle.size):
         stringer = ''
-        for j in range(0, mapSize):
+        for j in range(0, Particle.size):
             occ = Map[i,j]
             if occ == 1:
                 stringer += 'x'
@@ -399,14 +398,14 @@ def printMap(Map):
 
 def plotLineX(newMap,x0,x1,y):
     for x in range(x0,x1,np.sign(x1-x0)):
-        if x<0 or x>=mapSize:
+        if x<0 or x>=Particle.size:
             return newMap
         newMap[x,y] = 0
     return newMap
 
 def plotLineY(newMap,y0,y1,x):
     for y in range(y0,y1,np.sign(y1-y0)):
-        if y<0 or y>=mapSize:
+        if y<0 or y>=Particle.size:
             return newMap
         newMap[x,y] = 0
     return newMap
@@ -416,13 +415,13 @@ def plotLineXHigh(newMap,x0,x1,y0,y1):
     Yerror = 0
     y = y0
     for x in range(x0,x1,np.sign(x1-x0)):
-        if x<0 or x>=mapSize:
+        if x<0 or x>=Particle.size:
             return newMap
         newMap[x,y] = 0
         Yerror +=error
         if Yerror>=1:
             y += np.sign(y1-y0)
-            if y<0 or y>=mapSize:
+            if y<0 or y>=Particle.size:
                 return newMap
             newMap[x,y] = 0
             Yerror -= 1
@@ -434,13 +433,13 @@ def plotLineYHigh(newMap,x0,x1,y0,y1):
     Xerror = 0
     x = x0
     for y in range(y0,y1,np.sign(y1-y0)):
-        if y<0 or y>=mapSize:
+        if y<0 or y>=Particle.size:
             return newMap
         newMap[x,y] = 0
         Xerror += error
         if Xerror>=1:
             x+=np.sign(x1-x0)
-            if x<0 or x>=mapSize:
+            if x<0 or x>=Particle.size:
                 return newMap
             newMap[x,y] = 0
             Xerror -= 1

@@ -1,18 +1,20 @@
 from numpy import sign
-import Slam as Slam
 import numpy as np
 cimport cython
 cimport numpy as np
 
 
 
-cdef int Psize = Slam.mapSize
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
 
 
-cpdef np.ndarray[int,ndim=2] plotLineX(np.ndarray[int,ndim = 2] newMap,int x0,int x1,int y):
+cpdef np.ndarray[int,ndim=2]
+
+
+cpdef np.ndarray[int,ndim=2] plot_lineX(np.ndarray[int,ndim = 2] newMap,int x0,int x1,int y):
+    cdef int PsizeX = newMap.shape[0]
     # Cython speed-up implementation
 
     cdef int x
@@ -24,19 +26,20 @@ cpdef np.ndarray[int,ndim=2] plotLineX(np.ndarray[int,ndim = 2] newMap,int x0,in
     cdef int xS = x0
 
     for x in range(x0,x1):
-        if x>=0 and x<Psize:
+        if x>=0 and x<PsizeX:
             xS = x
             break
     #################################
 
     for x in range(xS,x1):
-        if x<0 or x>=Psize:
+        if x<0 or x>=PsizeX:
             return newMap
         newMap[x,y] = 0
 
     return newMap
 
-cpdef np.ndarray[int,ndim = 2] plotLineY(np.ndarray[int,ndim = 2] newMap,int x,int y0,int y1):
+cpdef np.ndarray[int,ndim = 2] plot_lineY(np.ndarray[int,ndim = 2] newMap,int x,int y0,int y1):
+    cdef int PsizeY = newMap.shape[1]
     # Cython speed-up implementation
 
     cdef int y
@@ -48,20 +51,21 @@ cpdef np.ndarray[int,ndim = 2] plotLineY(np.ndarray[int,ndim = 2] newMap,int x,i
     cdef int yS = y0
 
     for y in range(y0,y1):
-        if y>=0 and y<Psize:
+        if y>=0 and y<PsizeY:
             yS = y
             break
     ################################
 
     for y in range(yS,y1):
-        if y<0 or y>=Psize:
+        if y<0 or y>=PsizeY:
             return newMap
         newMap[x,y] = 0
 
     return newMap
 
-cpdef np.ndarray[int,ndim = 2] plotLineXHigh(np.ndarray[int,ndim = 2] newMap,int x0,int x1,int y0,int y1):
-
+cpdef np.ndarray[int,ndim = 2] plot_lineX_high(np.ndarray[int,ndim = 2] newMap,int x0,int x1,int y0,int y1):
+    cdef int PsizeX = newMap.shape[0]
+    cdef int PsizeY = newMap.shape[1]
     cdef int step = sign(x1-x0)
     cdef float error = abs(float(y0 - y1) / float(x0 - x1))
 
@@ -84,10 +88,10 @@ cpdef np.ndarray[int,ndim = 2] plotLineXHigh(np.ndarray[int,ndim = 2] newMap,int
         if Yerror >=1:
             y+= Ystep
 
-        if x>=0 and x<Psize:
+        if x>=0 and x<PsizeX:
             Xflag == True
 
-        if y>=0 and y<Psize:
+        if y>=0 and y<PsizeY:
             Yflag = True
 
         if Xflag and Yflag:
@@ -96,20 +100,22 @@ cpdef np.ndarray[int,ndim = 2] plotLineXHigh(np.ndarray[int,ndim = 2] newMap,int
     ###########################
 
     for x in range(xS,x1):
-        if x<0 or x>=Psize:
+        if x<0 or x>=PsizeX:
             return newMap
         newMap[x,y] = 0
         Yerror +=error
         if Yerror>=1:
             y += Ystep
-            if y<0 or y>=Psize:
+            if y<0 or y>=PsizeY:
                 return newMap
             newMap[x,y] = 0
             Yerror -= 1
     return newMap
 
 
-cpdef np.ndarray[int,ndim = 2] plotLineYHigh(np.ndarray[int,ndim = 2] newMap,int x0,int x1,int y0,int y1):
+cpdef np.ndarray[int,ndim = 2] plot_lineY_high(np.ndarray[int,ndim = 2] newMap,int x0,int x1,int y0,int y1):
+    cdef int PsizeX = newMap.shape[0]
+    cdef int PsizeY = newMap.shape[1]
     cdef float error = abs(float(x0-x1)/float(y0-y1))
     cdef float Xerror = 0
     cdef int step = sign(y1-y0)
@@ -133,10 +139,10 @@ cpdef np.ndarray[int,ndim = 2] plotLineYHigh(np.ndarray[int,ndim = 2] newMap,int
         if Xerror >=1:
             x+= Xstep
 
-        if x>=0 and x<Psize:
+        if x>=0 and x<PsizeX:
             Xflag == True
 
-        if y>=0 and y<Psize:
+        if y>=0 and y<PsizeY:
             Yflag = True
 
         if Xflag and Yflag:
@@ -146,13 +152,13 @@ cpdef np.ndarray[int,ndim = 2] plotLineYHigh(np.ndarray[int,ndim = 2] newMap,int
 
 
     for y in range(yS,y1):
-        if y<0 or y>=Psize:
+        if y<0 or y>=PsizeY:
             return newMap
         newMap[x,y] = 0
         Xerror += error
         if Xerror>=1:
             x+=Xstep
-            if x<0 or x>=Psize:
+            if x<0 or x>=PsizeX:
                 return newMap
             newMap[x,y] = 0
             Xerror -= 1
