@@ -34,7 +34,7 @@ def scanner(msg):
     angle_incr = msg.angle_increment
     range_max = msg.range_max
     measurements = np.asarray(msg.ranges)
-    mp.mapUpdate(mb.plot_all_lines, Particles, angle_min, angle_max, angle_incr, measurements, range_max)
+    mp.map_update(mb.plot_all_lines, Particles, angle_min, angle_max, angle_incr, measurements, range_max)
 
     global kapp
     kapp += 1
@@ -48,7 +48,7 @@ def scanner(msg):
 def main():
     rospy.init_node('my_package')
     global Particles
-    Particles = mp.initParticles()
+    Particles = mp.init_particles()
     # rospy.Subscriber("/odom",Odometry,odometry)
     # rospy.Subscriber("/kobuki/laser/scan",LaserScan,scanner)
 
