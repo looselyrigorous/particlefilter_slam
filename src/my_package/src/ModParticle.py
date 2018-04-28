@@ -4,13 +4,14 @@ from scipy.stats import norm
 import numpy as np
 import MapBuilder as mb
 import math
+from math import atan2
 import Preprocess as pp
 
 class Particle:
-    a1 = 0.01
-    a2 = 0.01
-    a3 = 0.01
-    a4 = 0.01
+    a1 = 0.0001
+    a2 = 0.0001
+    a3 = 0.0001
+    a4 = 0.0001
 
     fidelity = 0.1  # this is the map fidelity(e.g 0.1 means every pixel is 10cm * 10cm)
     genX = 0.0  # this is the ros prediction for its pos
@@ -18,8 +19,8 @@ class Particle:
     genTH = 0.0
     NoP = 1  # Number of Particles
     hitmap = None
-    sizeX = 101
-    sizeY = 111
+    sizeX = 501
+    sizeY = 511
 
     def __init__(self, x, y, th, grid, prop, prop_map, tick_map):
         self.x = x
@@ -86,6 +87,30 @@ def map_update(func, Particles, start_angle, end_angle, angle_incr, ranges, max_
         merger_map = p.merge_map_maker(func, start_angle, end_angle, angle_incr, ranges, max_depth)
     return merger_map
 
+
+def odom_update(Particles, X, Y, TH):
+    drot1, dtrans, drot2 = calculate_diff(X, Y, TH)
+
+    for i in Particles:
+        i.move_particle(drot1, dtrans, drot2)
+
+    replace_gen_pos(X, Y, TH)
+
+
+def replace_gen_pos(X, Y, TH):
+    Particle.genX = X
+    Particle.genY = Y
+    Particle.genTH = TH
+
+
+
+
+def calculate_diff(X, Y, TH):
+    drot1 = atan2(Y - Particle.genY, X - Particle.genX) - Particle.genTH
+    dtrans = math.sqrt((Particle.genX - X) ** 2 + (Particle.genY - Y) ** 2)
+    drot2 = TH - Particle.genTH - drot1
+
+    return drot1, dtrans, drot2
 
 def coord_to_grid_coord(x, y):
     x *= 2 / Particle.fidelity

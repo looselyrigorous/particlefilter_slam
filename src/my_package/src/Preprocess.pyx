@@ -2,7 +2,7 @@ import numpy as np
 cimport numpy as np
 from libc.math cimport isnan,INFINITY
 
-###problem is bigger than a few patches in the wall :\
+###This patches scan nans
 
 cpdef np.ndarray[dtype = double, ndim=1] trump_walling(np.ndarray[dtype = double, ndim=1] ranges,int distance):
     cdef int angles = ranges.shape[0]

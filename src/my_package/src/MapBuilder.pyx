@@ -19,9 +19,9 @@ cpdef np.ndarray[dtype = np.int64_t, ndim=2] plot_all_lines(float x, float y, fl
     cdef float y0 = y
     cdef float x1
     cdef float y1
-    start_angle += th
     cdef int angles = ranges.shape[0]
     angle_incr = (end_angle - start_angle) / angles
+    start_angle += th
     cdef int count
     cdef float distance
     cdef float curr_angle
@@ -45,7 +45,7 @@ cpdef np.ndarray[dtype = np.int64_t, ndim=2] plot_all_lines(float x, float y, fl
 
     # Then we add all the occupied space (aka the ones)
 
-    for count in range(0, angles):
+    for count in range(0,angles):
         distance = ranges[count]
         if distance == INFINITY or isnan(distance):
             continue
@@ -59,9 +59,19 @@ cpdef np.ndarray[dtype = np.int64_t, ndim=2] plot_all_lines(float x, float y, fl
 
         if xE >= 0 and xE < sizeX and yE >= 0 and yE < sizeY:
             tile_fixer(newMap,xE,yE,xM,yM)
+
+    for count in range(0, angles):
+        distance = ranges[count]
+        if distance == INFINITY or isnan(distance):
+            continue
+        curr_angle = start_angle + (angle_incr * count)
+        x1 = x0 + distance * cos(curr_angle)
+        y1 = y0 + distance * sin(curr_angle)
+        xE, yE = coord_to_grid_coord(x1, y1, fidelity, sizeX, sizeY)
+
+        if xE >= 0 and xE < sizeX and yE >= 0 and yE < sizeY:
             newMap[xE, yE] = 1
-        else:
-            print('out of bounds')
+
     return newMap
 
 cdef np.ndarray[dtype = np.int64_t, ndim = 2] zero_tiler(np.ndarray[dtype = np.int64_t, ndim = 2] newMap, int x0,
