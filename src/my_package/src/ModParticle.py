@@ -20,8 +20,8 @@ class Particle:
     genTH = 0.0
     NoP = 1  # Number of Particles
     hitmap = None
-    sizeX = 501
-    sizeY = 511
+    sizeX = 301
+    sizeY = 501
 
     def __init__(self, x, y, th, grid, prop, prop_map, tick_map):
         self.x = x
@@ -60,21 +60,26 @@ class Particle:
 
     # The function must have in
 
-    def merge_map_maker(self, func, start_angle, end_angle, angle_incr, ranges, max_depth):
-        merger_map = func(self.x, self.y, self.th, start_angle, end_angle,
-                          angle_incr, ranges, max_depth, Particle.sizeX, Particle.sizeY, Particle.fidelity)
+    def printMap(self):
         if Particle.count == 0:
-            mb.print_map(merger_map)
+            mb.print_map(self.grid)
         Particle.count += 1
         if Particle.count == 21:
             Particle.count = 0
+
+    def merge_map_maker(self, func, start_angle, end_angle, angle_incr, ranges, max_depth):
+        merger_map = func(self.x, self.y, self.th, start_angle, end_angle,
+                          angle_incr, ranges, max_depth, Particle.sizeX, Particle.sizeY, Particle.fidelity)
+
         return merger_map
 
     def prop_map_maker(self, func, merger_map):
+        #print(type(self.prop_map))
         self.prop_map = func(self.prop_map, self.tick_map,merger_map)
 
     def grid_maker(self, func):
         self.grid = func(self.prop_map)
+        self.printMap()
 
     def line_up(self, start):
         self.line_start = start

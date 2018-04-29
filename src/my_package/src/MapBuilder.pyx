@@ -10,15 +10,12 @@ from libc.math cimport floor, isnan, sin, cos, INFINITY
 @cython.cdivision(True)
 
 
-cpdef np.ndarray[dtype = np.int64_t, ndim=2] grid_make(np.ndarray[dtype = float, ndim=2] prop_map):
+cpdef np.ndarray[dtype = np.int64_t, ndim=2] grid_make(np.ndarray[dtype = double, ndim=2] prop_map):
 
     cdef int PsizeX = prop_map.shape[0]
     cdef int PsizeY = prop_map.shape[1]
 
     new_grid = np.ndarray(shape=(PsizeX, PsizeY), dtype=np.int)
-
-
-
 
     for x in range(0,PsizeX):
         for y in range(0,PsizeY):
@@ -27,9 +24,9 @@ cpdef np.ndarray[dtype = np.int64_t, ndim=2] grid_make(np.ndarray[dtype = float,
     return new_grid
 
 
-cpdef np.ndarray[dtype = float, ndim=2] prop_map_update(np.ndarray[dtype = float, ndim=2] prop_map,
-                                                        np.ndarray[dtype = int, ndim=2] tick_map,
-                                                        np.ndarray[dtype = int, ndim=2] merger_map):
+cpdef np.ndarray[dtype = np.float, ndim=2] prop_map_update(np.ndarray[dtype = double, ndim=2] prop_map,
+                                                        np.ndarray[dtype = np.int64_t, ndim=2] tick_map,
+                                                        np.ndarray[dtype = np.int64_t, ndim=2] merger_map):
     cdef int PsizeX = prop_map.shape[0]
     cdef int PsizeY = prop_map.shape[1]
     cdef int x,y,value

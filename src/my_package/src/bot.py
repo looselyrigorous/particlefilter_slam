@@ -21,7 +21,6 @@ def odometry(msg):
     z = msg.pose.pose.orientation.z
     w = msg.pose.pose.orientation.w
     w, p, th = mp.quaternion_to_radians(w, x, y, z)
-    print(th)
     mp.odom_update(Particles, x1, y1, th)
 
 

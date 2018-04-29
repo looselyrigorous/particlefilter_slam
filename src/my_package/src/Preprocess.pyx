@@ -1,6 +1,7 @@
 import numpy as np
 cimport numpy as np
 from libc.math cimport isnan,INFINITY
+cimport cython
 
 
 @cython.boundscheck(False)
