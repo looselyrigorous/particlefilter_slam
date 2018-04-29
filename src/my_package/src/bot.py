@@ -11,7 +11,6 @@ import ModParticle as mp
 import numpy as np
 
 Particles = list()
-kapp = 0
 
 
 def odometry(msg):
@@ -35,11 +34,8 @@ def scanner(msg):
     angle_incr = msg.angle_increment
     range_max = msg.range_max
     measurements = np.asarray(msg.ranges)
-    mp.map_update(mb.plot_all_lines, mb.prop_map_update, Particles, angle_min, angle_max, angle_incr, measurements, range_max)
-
-    global kapp
-    kapp += 1
-    print(kapp)
+    mp.map_update(mb.plot_all_lines, mb.prop_map_update,mb.grid_make, Particles,
+                  angle_min, angle_max, angle_incr, measurements, range_max)
 
 
 # Slam.mapUpdate(Particles,angle_min,angle_max,angle_incr,measurements,range_max)

@@ -73,6 +73,9 @@ class Particle:
     def prop_map_maker(self, func, merger_map):
         self.prop_map = func(self.prop_map, self.tick_map,merger_map)
 
+    def grid_maker(self, func):
+        self.grid = func(self.prop_map)
+
     def line_up(self, start):
         self.line_start = start
         self.line_end = start + self.prop
@@ -103,12 +106,14 @@ def init_particles():
     return Particles
 
 
-def map_update(merge_map_func, prop_map_func, Particles, start_angle, end_angle, angle_incr, ranges, max_depth):
+def map_update(merge_map_func, prop_map_func, grid_make_func,Particles,
+               start_angle, end_angle, angle_incr, ranges, max_depth):
     count = 0
     for p in Particles:
         count += 1
         merger_map = p.merge_map_maker(merge_map_func, start_angle, end_angle, angle_incr, ranges, max_depth)
         p.prop_map_maker(prop_map_func, merger_map)
+        p.grid_maker(grid_make_func)
     return merger_map
 
 
