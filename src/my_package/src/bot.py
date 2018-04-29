@@ -9,7 +9,7 @@ import Slam
 import MapBuilder as mb
 import ModParticle as mp
 import numpy as np
-
+import Propabilities as pb
 Particles = list()
 
 
@@ -28,14 +28,15 @@ def odometry(msg):
 
 
 def scanner(msg):
+    global Particles
     angle_min = msg.angle_min
     angle_max = msg.angle_max
     angle_incr = msg.angle_increment
     range_max = msg.range_max
     measurements = np.asarray(msg.ranges)
-    mp.map_update(mb.plot_all_lines, mb.prop_map_update,mb.grid_make, Particles,
-                  angle_min, angle_max, angle_incr, measurements, range_max)
-
+    mp.map_update(mb.plot_all_lines, mb.prop_map_update,mb.grid_make, pb.map_radius_error_calc,
+                  Particles, angle_min, angle_max, angle_incr, measurements, range_max)
+    Particles = mp.selectSurvivors(Particles)
 
 # Slam.mapUpdate(Particles,angle_min,angle_max,angle_incr,measurements,range_max)
 # Slam.printBestMap(Particles)
@@ -47,8 +48,9 @@ def main():
     Particles = mp.init_particles()
     #rospy.Subscriber("/kobuki/laser/scan",LaserScan,scanner)
 
-    rospy.Subscriber("/scan", LaserScan, scanner)
     rospy.Subscriber("/odom",Odometry,odometry)
+
+    rospy.Subscriber("/scan", LaserScan, scanner)
     rospy.spin()
 
 

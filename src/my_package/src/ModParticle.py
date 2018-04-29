@@ -8,10 +8,10 @@ from math import atan2
 #import Preprocess as pp
 
 class Particle:
-    a1 = 0.0001
-    a2 = 0.0001
-    a3 = 0.0001
-    a4 = 0.0001
+    a1 = 0.001
+    a2 = 0.001
+    a3 = 0.001
+    a4 = 0.001
     count = 0
 
     fidelity = 0.1  # this is the map fidelity(e.g 0.1 means every pixel is 10cm * 10cm)
@@ -56,8 +56,8 @@ class Particle:
         self.y += dtranse * sin(self.th + drote1)
         self.th += drote1 + drote2
         self.th = self.th % (2*np.pi)
-
-        self.prop *= norm(0, sgm1).pdf(dev1) * norm(0, sgm2).pdf(dev2) * norm(0, sgm3).pdf(dev3)
+        print (norm(0, sgm1).pdf(dev1) * norm(0, sgm2).pdf(dev2) * norm(0, sgm3).pdf(dev3))
+        self.prop *= ((norm(0, sgm1).pdf(dev1)*a1) * (norm(0, sgm2).pdf(dev2)*a1) * (norm(0, sgm3).pdf(dev3)*a1))
 
     # The function must have in
 
@@ -77,10 +77,19 @@ class Particle:
     def prop_map_maker(self, func, merger_map):
         #print(type(self.prop_map))
         self.prop_map = func(self.prop_map, self.tick_map, merger_map)
+        #print(type(self.prop_map))
 
     def grid_maker(self, func):
         self.grid = func(self.prop_map)
-        self.print_map()
+        #self.print_map()
+
+    def map_error(self,func,merger_map):
+        print(self.prop)
+        self.prop *= func(merger_map,self.grid,self.prop_map,self.tick_map)
+        print(self.prop)
+
+    def normalize(self, ammount):
+        self.prop /= ammount
 
     def line_up(self, start):
         self.line_start = start
@@ -95,8 +104,7 @@ class Particle:
     def procreate(self):
         return Particle(self.x, self.y, self.th, self.grid, self.prop, self.prop_map, self.tick_map)
 
-    def map_error(self,func,merger_map):
-        self.prop *= func(merger_map,self.grid,self.prop_map,self.tick_map)
+
 
 
 def init_particles():
@@ -115,12 +123,13 @@ def init_particles():
     return Particles
 
 
-def map_update(merge_map_func, prop_map_func, grid_make_func, Particles,
-               start_angle, end_angle, angle_incr, ranges, max_depth):
+def map_update(merge_map_func, prop_map_func, grid_make_func, map_error_func,
+               Particles, start_angle, end_angle, angle_incr, ranges, max_depth):
     count = 0
     for p in Particles:
         count += 1
         merger_map = p.merge_map_maker(merge_map_func, start_angle, end_angle, angle_incr, ranges, max_depth)
+        p.map_error(map_error_func,merger_map)
         p.prop_map_maker(prop_map_func, merger_map)
         p.grid_maker(grid_make_func)
     return merger_map
@@ -139,6 +148,43 @@ def replace_gen_pos(X, Y, TH):
     Particle.genX = X
     Particle.genY = Y
     Particle.genTH = TH
+
+def normalizeAndLineUp(Particles):
+    sum = 0
+    for p in Particles:
+        sum += p.prop
+    for p in Particles:
+        p.normalize(sum)
+    nextStartPoint = 0
+    for p in Particles:
+        nextStartPoint = p.line_up(nextStartPoint)
+    #print(sum)
+
+def selectSurvivors(Particles):
+    normalizeAndLineUp(Particles)
+    step = 1 / Particle.NoP
+    startPoint = random() / Particle.NoP
+    survivors = list()
+    particleIndex = 0
+    currParticle = Particles[particleIndex]
+    currPoint = startPoint
+
+    for i in range(0, Particle.NoP):
+        survive = currParticle.survive(currPoint)
+        if survive:
+            survivors.append(currParticle)
+            currPoint += step
+        else:
+            particleIndex += 1
+            currParticle = Particles[particleIndex]
+            i -= 1
+
+    children = list()
+
+    for s in survivors:
+        children.append(s.procreate())
+
+    return children
 
 
 def calculate_diff(X, Y, TH):

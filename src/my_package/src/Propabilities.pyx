@@ -5,7 +5,7 @@ cimport cython
 from libc.math cimport sqrt,ceil
 
 
-cpdef int map_radius_error_calc(np.ndarray[dtype = np.int64_t, ndim=2] merger_map,
+cpdef float map_radius_error_calc(np.ndarray[dtype = np.int64_t, ndim=2] merger_map,
                             np.ndarray[dtype = np.int64_t, ndim=2] grid,
                             np.ndarray[dtype = double, ndim=2] prop_map,
                             np.ndarray[dtype = np.int64_t, ndim=2] tick_map,):
@@ -19,7 +19,7 @@ cpdef int map_radius_error_calc(np.ndarray[dtype = np.int64_t, ndim=2] merger_ma
             if merger_map[x,y] != -1 and grid[x,y]!=-1:
                 error += abs_tile_radius_error(merger_map[x,y],grid,x,y)
 
-    return error
+    return 1/(error+1)
 
 
 
