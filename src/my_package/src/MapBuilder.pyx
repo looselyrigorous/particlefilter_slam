@@ -11,11 +11,13 @@ from libc.math cimport floor, isnan, sin, cos, INFINITY
 
 
 cpdef np.ndarray[dtype = np.int64_t, ndim=2] grid_make(np.ndarray[dtype = float, ndim=2] prop_map):
-    new_grid = np.ndarray(shape=(sizeX, sizeY), dtype=np.int)
-
 
     cdef int PsizeX = prop_map.shape[0]
     cdef int PsizeY = prop_map.shape[1]
+
+    new_grid = np.ndarray(shape=(PsizeX, PsizeY), dtype=np.int)
+
+
 
 
     for x in range(0,PsizeX):
