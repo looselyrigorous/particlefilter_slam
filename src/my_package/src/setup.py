@@ -3,3 +3,4 @@ from Cython.Build import cythonize
 
 setup(ext_modules=cythonize('MapBuilder.pyx'))
 setup(ext_modules=cythonize('Preprocess.pyx'))
+setup(ext_modules=cythonize('Propabilities.pyx'))

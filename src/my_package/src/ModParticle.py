@@ -5,7 +5,7 @@ import numpy as np
 import MapBuilder as mb
 import math
 from math import atan2
-import Preprocess as pp
+#import Preprocess as pp
 
 class Particle:
     a1 = 0.0001
@@ -55,12 +55,13 @@ class Particle:
         self.x += dtranse * cos(self.th + drote1)
         self.y += dtranse * sin(self.th + drote1)
         self.th += drote1 + drote2
+        self.th = self.th % (2*np.pi)
 
-        self.prop = norm(0, sgm1).pdf(dev1) * norm(0, sgm2).pdf(dev2) * norm(0, sgm3).pdf(dev3)
+        self.prop *= norm(0, sgm1).pdf(dev1) * norm(0, sgm2).pdf(dev2) * norm(0, sgm3).pdf(dev3)
 
     # The function must have in
 
-    def printMap(self):
+    def print_map(self):
         if Particle.count == 0:
             mb.print_map(self.grid)
         Particle.count += 1
@@ -75,24 +76,27 @@ class Particle:
 
     def prop_map_maker(self, func, merger_map):
         #print(type(self.prop_map))
-        self.prop_map = func(self.prop_map, self.tick_map,merger_map)
+        self.prop_map = func(self.prop_map, self.tick_map, merger_map)
 
     def grid_maker(self, func):
         self.grid = func(self.prop_map)
-        self.printMap()
+        self.print_map()
 
     def line_up(self, start):
         self.line_start = start
         self.line_end = start + self.prop
-        return line_end
+        return self.line_end
 
     def survive(self, number):
-        if number >= self.line_start and number < self.line_end:
+        if self.line_start <= number < self.line_end:
             return True
         return False
 
     def procreate(self):
-        return Particle(self.x, self.y, self.th, self.map, self.prop, self.propMap, self.tickMap)
+        return Particle(self.x, self.y, self.th, self.grid, self.prop, self.prop_map, self.tick_map)
+
+    def map_error(self,func,merger_map):
+        self.prop *= func(merger_map,self.grid,self.prop_map,self.tick_map)
 
 
 def init_particles():
@@ -111,7 +115,7 @@ def init_particles():
     return Particles
 
 
-def map_update(merge_map_func, prop_map_func, grid_make_func,Particles,
+def map_update(merge_map_func, prop_map_func, grid_make_func, Particles,
                start_angle, end_angle, angle_incr, ranges, max_depth):
     count = 0
     for p in Particles:
@@ -137,14 +141,13 @@ def replace_gen_pos(X, Y, TH):
     Particle.genTH = TH
 
 
-
-
 def calculate_diff(X, Y, TH):
     drot1 = atan2(Y - Particle.genY, X - Particle.genX) - Particle.genTH
     dtrans = math.sqrt((Particle.genX - X) ** 2 + (Particle.genY - Y) ** 2)
     drot2 = TH - Particle.genTH - drot1
 
     return drot1, dtrans, drot2
+
 
 def coord_to_grid_coord(x, y):
     x *= 2 / Particle.fidelity
@@ -172,4 +175,4 @@ def quaternion_to_radians(w, x, y, z):
     t4 = +1.0 - 2.0 * (ysqr + z * z)
     Z = math.degrees(math.atan2(t3, t4))
 
-    return np.deg2rad(X)%2*np.pi, np.deg2rad(Y)%2*np.pi, np.deg2rad(Z)%2*np.pi
+    return np.deg2rad(X) % 2*np.pi, np.deg2rad(Y) % 2*np.pi, np.deg2rad(Z) % 2*np.pi
