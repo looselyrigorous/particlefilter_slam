@@ -2,7 +2,9 @@ from numpy import sign
 cimport numpy as np
 import numpy as np
 cimport cython
-from libc.math cimport floor, isnan, sin, cos, INFINITY
+from libc.math cimport floor, isnan, sin, cos, INFINITY , round
+from cython cimport view
+from libc.stdlib cimport malloc, free
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -10,16 +12,21 @@ from libc.math cimport floor, isnan, sin, cos, INFINITY
 @cython.cdivision(True)
 
 
-cpdef np.ndarray[dtype = np.int64_t, ndim=2] grid_make(np.ndarray[dtype = double, ndim=2] prop_map):
+
+
+cpdef np.ndarray[dtype = np.int64_t, ndim=2] grid_make(np.ndarray[dtype =  np.int64_t,ndim = 2] new_grid,
+                                                       np.ndarray[dtype = double, ndim=2] prop_map):
 
     cdef int PsizeX = prop_map.shape[0]
     cdef int PsizeY = prop_map.shape[1]
 
-    new_grid = np.ndarray(shape=(PsizeX, PsizeY), dtype=np.int)
+    cdef int x,y
 
     for x in range(0,PsizeX):
         for y in range(0,PsizeY):
-            new_grid[x,y] = round(prop_map[x,y])
+            if prop_map[x,y] == -1:
+                continue
+            new_grid[x,y] = int(round(prop_map[x,y]))
 
     return new_grid
 
@@ -54,7 +61,7 @@ cpdef np.ndarray[dtype = np.int64_t, ndim=2] plot_all_lines(float x, float y, fl
                                                             np.ndarray[dtype = double, ndim=1] ranges, float max_depth,
                                                             int sizeX,
                                                             int sizeY, float fidelity):
-    newMap = np.ndarray(shape=(sizeX, sizeY), dtype=np.int)
+    newMap = np.ndarray(shape=(sizeX, sizeY), dtype=np.long)
     newMap.fill(-1)
     cdef float x0 = x
     cdef float y0 = y
@@ -273,7 +280,7 @@ cdef np.ndarray[dtype = np.int64_t, ndim = 2] plot_lineY_high(np.ndarray[dtype =
 
     return newMap
 
-cpdef coord_to_grid_coord(float x, float y, float fidelity, int sizeX, int sizeY):
+cdef coord_to_grid_coord(float x, float y, float fidelity, int sizeX, int sizeY):
     x *= 2 / fidelity
     y *= 2 / fidelity
 

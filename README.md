@@ -21,3 +21,11 @@ you must manually change it to /kobuki/laser/scan that is also a commented line)
 
 
 More to come :)
+
+
+Best mean time for
+
+('Merge Map Maker:', 0.00312336411913551)
+('Error Calc:', 0.0001461592968025942)
+('Propability Map Maker:', 0.00312336411913551)
+('Grid Maker:', 0.00017813796500252435)

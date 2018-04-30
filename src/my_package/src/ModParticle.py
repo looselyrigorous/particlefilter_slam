@@ -5,20 +5,34 @@ import numpy as np
 import MapBuilder as mb
 import math
 from math import atan2
+import time
 #import Preprocess as pp
 
+
+grid_maker_count  = 0
+grid_maker_mean = 0
+
+prop_maker_count  = 0
+prop_maker_mean = 0
+
+error_calc_count  = 0
+error_calc_mean = 0
+
+merge_maker_count  = 0
+merge_maker_mean = 0
+
 class Particle:
-    a1 = 0.0000000000001
-    a2 = 0.0000000000001
+    a1 = 0.00000000001
+    a2 = 0.00000000001
     a3 = 0.0000000001
     a4 = 0.0000000001
     count = 0
 
-    fidelity = 0.2  # this is the map fidelity(e.g 0.1 means every pixel is 10cm * 10cm)
+    fidelity = 0.4  # this is the map fidelity(e.g 0.1 means every pixel is 10cm * 10cm)
     genX = 0.0  # this is the ros prediction for its pos
     genY = 0.0
     genTH = 0.0
-    NoP = 1  # Number of Particles
+    NoP = 15  # Number of Particles
     hitmap = None
     sizeX = 201
     sizeY = 201
@@ -35,6 +49,8 @@ class Particle:
         self.line_end = 0
 
     def move_particle(self, drot1, dtrans, drot2):
+
+
         a1 = Particle.a1
         a2 = Particle.a2
         a3 = Particle.a3
@@ -46,11 +62,8 @@ class Particle:
         sgm3 = abs(a1 * drot2 + a2 * dtrans)
 
         dev1 = normal(0, sgm1)
-        #print(dev1)
         dev2 = normal(0, sgm2)
-
         dev3 = normal(0, sgm3)
-        #print(dev3)
 
         drote1 = drot1 + dev1
         dtranse = dtrans + dev2
@@ -62,35 +75,77 @@ class Particle:
         self.th += (drote1 + drote2)
         self.th = self.th
 
-        #print(drote1 + drote2)
 
         normalizing_factor = (norm(0, sgm1).pdf(0)) * (norm(0, sgm2).pdf(0)) * (norm(0, sgm3).pdf(0))
+        print(normalizing_factor)
         self.prop *= (norm(0, sgm1).pdf(dev1)) * (norm(0, sgm2).pdf(dev2)) * (norm(0, sgm3).pdf(dev3))/normalizing_factor
-
-        print(self.th)
     # The function must have in
 
     def print_map(self):
         if Particle.count == 0:
             mb.print_map(self.grid)
         Particle.count += 1
-        if Particle.count == 101:
+        if Particle.count == 501:
             Particle.count = 0
 
     def merge_map_maker(self, func, start_angle, end_angle, angle_incr, ranges, max_depth):
+        start = time.time()
         merger_map = func(self.x, self.y, self.th, start_angle, end_angle,
                           angle_incr, ranges, max_depth, Particle.sizeX, Particle.sizeY, Particle.fidelity)
+
+        end = time.time()
+        global merge_maker_mean
+        global merge_maker_count
+
+        merge_maker_mean += end-start
+        merge_maker_count +=1
+
+        print('Merge Map Maker:',merge_maker_mean/merge_maker_count)
 
         return merger_map
 
     def prop_map_maker(self, func, merger_map):
+        start = time.time()
+
         self.prop_map = func(self.prop_map, self.tick_map, merger_map)
-        
+
+        end = time.time()
+        global prop_maker_mean
+        global prop_maker_count
+
+        prop_maker_mean += end-start
+        prop_maker_count +=1
+
+        print('Propability Map Maker:',merge_maker_mean/merge_maker_count)
+
+
     def grid_maker(self, func):
-        self.grid = func(self.prop_map)
+        start = time.time()
+
+        self.grid = func(self.grid,self.prop_map)
+
+        end = time.time()
+        global grid_maker_mean
+        global grid_maker_count
+
+        grid_maker_mean += end-start
+        grid_maker_count+=1
+        print('Grid Maker:',grid_maker_mean/grid_maker_count)
 
     def map_error(self,func,merger_map):
-        self.prop *= func(merger_map,self.grid,self.prop_map,self.tick_map)
+        start = time.time()
+
+        new_prop = func(merger_map,self.grid,self.prop_map,self.tick_map)
+        print(new_prop)
+        self.prop *= new_prop
+
+        end = time.time()
+        global error_calc_mean
+        global error_calc_count
+
+        error_calc_mean += end-start
+        error_calc_count +=1
+        print('Error Calc:',error_calc_mean/error_calc_count)
 
     def normalize(self, ammount):
         self.prop /= ammount
@@ -188,7 +243,7 @@ def selectSurvivors(Particles):
     for s in survivors:
         children.append(s.procreate())
 
-    #print_best_particle(children)
+    print_best_particle(children)
 
     return children
 

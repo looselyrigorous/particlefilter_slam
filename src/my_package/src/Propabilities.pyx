@@ -1,8 +1,34 @@
 cimport numpy as np
 import numpy as np
 cimport cython
-
+from libc.math cimport abs as myabs
 from libc.math cimport sqrt,ceil
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.nonecheck(False)
+@cython.cdivision(True)
+
+
+cpdef float map_pos_error_calc(np.ndarray[dtype = long, ndim=2] merger_map,
+                            np.ndarray[dtype = long, ndim=2] grid,
+                            np.ndarray[dtype = double, ndim=2] prop_map,
+                            np.ndarray[dtype = np.int64_t, ndim=2] tick_map,):
+
+    cdef int PsizeX = grid.shape[0]
+    cdef int PsizeY = grid.shape[1]
+
+    cdef int x,y
+    cdef int error = 0
+    for x in range(0,PsizeX):
+        for y in range(0,PsizeY):
+            if merger_map[x,y] != -1 and grid[x,y] != -1:
+                error += myabs(merger_map[x,y] - grid[x,y])
+
+    return 1/float(error+1)
+
+
+
 
 
 cpdef float map_radius_error_calc(np.ndarray[dtype = np.int64_t, ndim=2] merger_map,
@@ -13,7 +39,7 @@ cpdef float map_radius_error_calc(np.ndarray[dtype = np.int64_t, ndim=2] merger_
     cdef int PsizeX = grid.shape[0]
     cdef int PsizeY = grid.shape[1]
     cdef int x,y
-    cdef error = 0
+    cdef int error = 0
     for x in range(0,PsizeX):
         for y in range(0,PsizeY):
             if merger_map[x,y] != -1 and grid[x,y]!=-1:
@@ -23,7 +49,7 @@ cpdef float map_radius_error_calc(np.ndarray[dtype = np.int64_t, ndim=2] merger_
 
 
 
-cdef double abs_tile_radius_error(int tile,np.ndarray[dtype = np.int64_t, ndim=2] grid,int x,int y):
+cdef int abs_tile_radius_error(int tile,np.ndarray[dtype = np.int64_t, ndim=2] grid,int x,int y):
 
     cdef int PsizeX = grid.shape[0]
     cdef int PsizeY = grid.shape[1]
@@ -36,7 +62,7 @@ cdef double abs_tile_radius_error(int tile,np.ndarray[dtype = np.int64_t, ndim=2
             return i
     return max_radius
 
-cdef calc_error_radius(np.ndarray[dtype = np.int64_t, ndim=2] grid, int x0, int y0, int radius, int tile):
+cdef bint calc_error_radius(np.ndarray[dtype = np.int64_t, ndim=2] grid, int x0, int y0, int radius, int tile):
     cdef int x = 0
     cdef int y = 0
     cdef int dx = 1
