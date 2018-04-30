@@ -1,7 +1,6 @@
 cimport numpy as np
 import numpy as np
 cimport cython
-from libc.math cimport abs as myabs
 from libc.math cimport sqrt,ceil
 
 @cython.boundscheck(False)
@@ -19,11 +18,11 @@ cpdef float map_pos_error_calc(np.ndarray[dtype = long, ndim=2] merger_map,
     cdef int PsizeY = grid.shape[1]
 
     cdef int x,y
-    cdef int error = 0
+    cdef long error = 0
     for x in range(0,PsizeX):
         for y in range(0,PsizeY):
             if merger_map[x,y] != -1 and grid[x,y] != -1:
-                error += myabs(merger_map[x,y] - grid[x,y])
+                error += merger_map[x,y] - grid[x,y]
 
     return 1/float(error+1)
 

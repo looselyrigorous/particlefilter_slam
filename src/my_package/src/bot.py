@@ -13,9 +13,19 @@ import Propabilities as pb
 Particles = list()
 first_odom = 0
 
+
+odoms = 0
+scanners = 0
 def odometry(msg):
     global first_odom
     global Particles
+    global odoms
+    global scanners
+    #print('odom:',odoms)
+
+
+
+
     x = msg.pose.pose.position.x
     y = msg.pose.pose.position.y
     l = msg.pose.pose.orientation.x
@@ -26,9 +36,13 @@ def odometry(msg):
     if first_odom == 0:
         Particles = mp.init_particles(x,y,th)
         first_odom +=1
+        return
+    if odoms%10 != 0:
+        odoms += 1
+        return
+    odoms += 1
 
-    else:
-        mp.odom_update(Particles, x, y, th)
+    mp.odom_update(Particles, x, y, th)
 
 
 # rospy.loginfo("w : {} , p: {}, th:{}".format(w,p,th))
@@ -38,6 +52,12 @@ def scanner(msg):
     global Particles
     if first_odom == 0:
         return
+    global scanners
+    #print('scanner',scanners)
+    if scanners%10 != 0:
+        scanners += 1
+        return
+    scanners += 1
     angle_min = msg.angle_min
     angle_max = msg.angle_max
     angle_incr = msg.angle_increment

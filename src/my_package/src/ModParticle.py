@@ -21,6 +21,7 @@ error_calc_mean = 0
 merge_maker_count  = 0
 merge_maker_mean = 0
 
+
 class Particle:
     a1 = 0.00000000001
     a2 = 0.00000000001
@@ -28,11 +29,11 @@ class Particle:
     a4 = 0.0000000001
     count = 0
 
-    fidelity = 0.4  # this is the map fidelity(e.g 0.1 means every pixel is 10cm * 10cm)
+    fidelity = 1  # this is the map fidelity(e.g 0.1 means every pixel is 10cm * 10cm)
     genX = 0.0  # this is the ros prediction for its pos
     genY = 0.0
     genTH = 0.0
-    NoP = 15  # Number of Particles
+    NoP = 10  # Number of Particles
     hitmap = None
     sizeX = 201
     sizeY = 201
@@ -49,7 +50,6 @@ class Particle:
         self.line_end = 0
 
     def move_particle(self, drot1, dtrans, drot2):
-
 
         a1 = Particle.a1
         a2 = Particle.a2
@@ -77,8 +77,10 @@ class Particle:
 
 
         normalizing_factor = (norm(0, sgm1).pdf(0)) * (norm(0, sgm2).pdf(0)) * (norm(0, sgm3).pdf(0))
-        print(normalizing_factor)
+        #print(normalizing_factor)
         self.prop *= (norm(0, sgm1).pdf(dev1)) * (norm(0, sgm2).pdf(dev2)) * (norm(0, sgm3).pdf(dev3))/normalizing_factor
+
+
     # The function must have in
 
     def print_map(self):
@@ -100,7 +102,7 @@ class Particle:
         merge_maker_mean += end-start
         merge_maker_count +=1
 
-        print('Merge Map Maker:',merge_maker_mean/merge_maker_count)
+        #print('Merge Map Maker:',merge_maker_mean/merge_maker_count)
 
         return merger_map
 
@@ -116,7 +118,7 @@ class Particle:
         prop_maker_mean += end-start
         prop_maker_count +=1
 
-        print('Propability Map Maker:',merge_maker_mean/merge_maker_count)
+        #print('Propability Map Maker:',merge_maker_mean/merge_maker_count)
 
 
     def grid_maker(self, func):
@@ -130,13 +132,13 @@ class Particle:
 
         grid_maker_mean += end-start
         grid_maker_count+=1
-        print('Grid Maker:',grid_maker_mean/grid_maker_count)
+        #print('Grid Maker:',grid_maker_mean/grid_maker_count)
 
     def map_error(self,func,merger_map):
         start = time.time()
 
         new_prop = func(merger_map,self.grid,self.prop_map,self.tick_map)
-        print(new_prop)
+        #print(new_prop)
         self.prop *= new_prop
 
         end = time.time()
@@ -145,7 +147,7 @@ class Particle:
 
         error_calc_mean += end-start
         error_calc_count +=1
-        print('Error Calc:',error_calc_mean/error_calc_count)
+        #print('Error Calc:',error_calc_mean/error_calc_count)
 
     def normalize(self, ammount):
         self.prop /= ammount
@@ -177,6 +179,7 @@ def init_particles(x,y,th):
     tick_map.fill(0)
     for i in range(0, Particle.NoP):
         Particles.append(Particle(0, 0, 0, grid, 1, prop_map, tick_map))
+    normalizeAndLineUp(Particles)
     return Particles
 
 
@@ -235,6 +238,7 @@ def selectSurvivors(Particles):
             currPoint += step
         else:
             particleIndex += 1
+            print(currParticle.prop)
             currParticle = Particles[particleIndex]
             i -= 1
 

@@ -36,21 +36,21 @@ cpdef np.ndarray[dtype = np.float, ndim=2] prop_map_update(np.ndarray[dtype = do
                                                         np.ndarray[dtype = np.int64_t, ndim=2] merger_map):
     cdef int PsizeX = prop_map.shape[0]
     cdef int PsizeY = prop_map.shape[1]
-    cdef int x,y,value
-
+    cdef int x,y,value,value2
     for x in range(0,PsizeX):
         for y in range(0,PsizeY):
             value = merger_map[x,y]
             if value == -1:
                 continue
-            if tick_map[x,y] == -1:
+            value2 = tick_map[x,y]
+            if value2 == -1:
                 prop_map[x,y] = value
                 tick_map[x,y] = 1
                 continue
-            prop_map[x,y] *= tick_map[x,y]
+            prop_map[x,y] *= value2
             prop_map[x,y] += value
             tick_map[x,y] += 1
-            prop_map[x,y] /= tick_map[x,y]
+            prop_map[x,y] /= (value2+1)
 
     return prop_map
 

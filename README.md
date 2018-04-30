@@ -25,7 +25,7 @@ More to come :)
 
 Best mean time for
 
-('Merge Map Maker:', 0.00312336411913551)
-('Error Calc:', 0.0001461592968025942)
-('Propability Map Maker:', 0.00312336411913551)
-('Grid Maker:', 0.00017813796500252435)
+('Merge Map Maker:', 0.004237684700059595)!!
+('Error Calc:', 0.00029190216005218697)
+('Propability Map Maker:', 0.004237684700059595)!!
+('Grid Maker:', 0.00035273702988713427)
