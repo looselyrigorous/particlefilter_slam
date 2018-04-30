@@ -11,17 +11,24 @@ import ModParticle as mp
 import numpy as np
 import Propabilities as pb
 Particles = list()
-
+first_odom = 0
 
 def odometry(msg):
-    x1 = msg.pose.pose.position.x
-    y1 = msg.pose.pose.position.y
-    x = msg.pose.pose.orientation.x
-    y = msg.pose.pose.orientation.y
+    global first_odom
+    global Particles
+    x = msg.pose.pose.position.x
+    y = msg.pose.pose.position.y
+    l = msg.pose.pose.orientation.x
+    s = msg.pose.pose.orientation.y
     z = msg.pose.pose.orientation.z
     w = msg.pose.pose.orientation.w
-    w, p, th = mp.quaternion_to_radians(w, x, y, z)
-    mp.odom_update(Particles, x1, y1, th)
+    w, p, th = mp.quaternion_to_radians(w, l, s, z)
+    if first_odom == 0:
+        Particles = mp.init_particles(x,y,th)
+        first_odom +=1
+
+    else:
+        mp.odom_update(Particles, x, y, th)
 
 
 # rospy.loginfo("w : {} , p: {}, th:{}".format(w,p,th))
@@ -29,6 +36,8 @@ def odometry(msg):
 
 def scanner(msg):
     global Particles
+    if first_odom == 0:
+        return
     angle_min = msg.angle_min
     angle_max = msg.angle_max
     angle_incr = msg.angle_increment
@@ -44,13 +53,10 @@ def scanner(msg):
 
 def main():
     rospy.init_node('my_package')
-    global Particles
-    Particles = mp.init_particles()
     #rospy.Subscriber("/kobuki/laser/scan",LaserScan,scanner)
 
     rospy.Subscriber("/odom",Odometry,odometry)
-
-    rospy.Subscriber("/scan", LaserScan, scanner)
+    #rospy.Subscriber("/scan", LaserScan, scanner)
     rospy.spin()
 
 
