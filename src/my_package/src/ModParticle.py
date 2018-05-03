@@ -6,20 +6,10 @@ import MapBuilder as mb
 import math
 from math import atan2
 import time
+import sys
 #import Preprocess as pp
+from PIL import Image, ImageDraw, ImageFont
 
-
-grid_maker_count  = 0
-grid_maker_mean = 0
-
-prop_maker_count  = 0
-prop_maker_mean = 0
-
-error_calc_count  = 0
-error_calc_mean = 0
-
-merge_maker_count  = 0
-merge_maker_mean = 0
 
 
 class Particle:
@@ -29,14 +19,16 @@ class Particle:
     a4 = 0.0000000001
     count = 0
 
-    fidelity = 1  # this is the map fidelity(e.g 0.1 means every pixel is 10cm * 10cm)
+    fidelity = 0.1  # this is the map fidelity(e.g 0.1 means every pixel is 10cm * 10cm)
     genX = 0.0  # this is the ros prediction for its pos
     genY = 0.0
     genTH = 0.0
     NoP = 10  # Number of Particles
     hitmap = None
-    sizeX = 201
-    sizeY = 201
+    sizeX = 301
+    sizeY = 301
+
+
 
     def __init__(self, x, y, th, grid, prop, prop_map, tick_map):
         self.x = x
@@ -75,10 +67,12 @@ class Particle:
         self.th += (drote1 + drote2)
         self.th = self.th
 
+        print(self.x,self.y)
 
         normalizing_factor = (norm(0, sgm1).pdf(0)) * (norm(0, sgm2).pdf(0)) * (norm(0, sgm3).pdf(0))
-        #print(normalizing_factor)
-        self.prop *= (norm(0, sgm1).pdf(dev1)) * (norm(0, sgm2).pdf(dev2)) * (norm(0, sgm3).pdf(dev3))/normalizing_factor
+        weight = (norm(0, sgm1).pdf(dev1)) * (norm(0, sgm2).pdf(dev2)) * (norm(0, sgm3).pdf(dev3))
+        #print(normalizing_factor,weight)
+        self.prop *= weight/normalizing_factor
 
 
     # The function must have in
@@ -86,68 +80,46 @@ class Particle:
     def print_map(self):
         if Particle.count == 0:
             mb.print_map(self.grid)
+            self.make_photo()
         Particle.count += 1
-        if Particle.count == 501:
+        if Particle.count == 201:
             Particle.count = 0
 
+    def make_photo(self):
+
+        myarray = np.ndarray(shape = (Particle.sizeX,Particle.sizeY))
+        for i in range(Particle.sizeX):
+            for j in range(Particle.sizeY):
+                if self.grid[i,j] == -1:
+                    myarray[i,j] = 0.5
+                else:
+                    myarray[i,j] = 1 - self.grid[i,j]
+        Photo = Image.fromarray(np.uint8((myarray)*255))
+        #Photo.show()
+        Photo.save('result.bmp')
+
+
+
     def merge_map_maker(self, func, start_angle, end_angle, angle_incr, ranges, max_depth):
-        start = time.time()
         merger_map = func(self.x, self.y, self.th, start_angle, end_angle,
                           angle_incr, ranges, max_depth, Particle.sizeX, Particle.sizeY, Particle.fidelity)
 
-        end = time.time()
-        global merge_maker_mean
-        global merge_maker_count
-
-        merge_maker_mean += end-start
-        merge_maker_count +=1
-
-        #print('Merge Map Maker:',merge_maker_mean/merge_maker_count)
 
         return merger_map
 
     def prop_map_maker(self, func, merger_map):
-        start = time.time()
-
         self.prop_map = func(self.prop_map, self.tick_map, merger_map)
 
-        end = time.time()
-        global prop_maker_mean
-        global prop_maker_count
-
-        prop_maker_mean += end-start
-        prop_maker_count +=1
-
-        #print('Propability Map Maker:',merge_maker_mean/merge_maker_count)
 
 
     def grid_maker(self, func):
-        start = time.time()
-
         self.grid = func(self.grid,self.prop_map)
 
-        end = time.time()
-        global grid_maker_mean
-        global grid_maker_count
-
-        grid_maker_mean += end-start
-        grid_maker_count+=1
-        #print('Grid Maker:',grid_maker_mean/grid_maker_count)
-
     def map_error(self,func,merger_map):
-        start = time.time()
 
         new_prop = func(merger_map,self.grid,self.prop_map,self.tick_map)
-        #print(new_prop)
         self.prop *= new_prop
 
-        end = time.time()
-        global error_calc_mean
-        global error_calc_count
-
-        error_calc_mean += end-start
-        error_calc_count +=1
-        #print('Error Calc:',error_calc_mean/error_calc_count)
 
     def normalize(self, ammount):
         self.prop /= ammount
@@ -178,8 +150,7 @@ def init_particles(x,y,th):
     tick_map = np.ndarray(shape=(Particle.sizeX, Particle.sizeY), dtype=np.int)
     tick_map.fill(0)
     for i in range(0, Particle.NoP):
-        Particles.append(Particle(0, 0, 0, grid, 1, prop_map, tick_map))
-    normalizeAndLineUp(Particles)
+        Particles.append(Particle(0, 0, 0, grid, 1.0, prop_map, tick_map))
     return Particles
 
 
@@ -192,18 +163,15 @@ def map_update(merge_map_func, prop_map_func, grid_make_func, map_error_func,
         p.map_error(map_error_func,merger_map)
         p.prop_map_maker(prop_map_func, merger_map)
         p.grid_maker(grid_make_func)
-    selectSurvivors(Particles)
     return merger_map
 
 
 
 def odom_update(Particles, X, Y, TH):
     drot1, dtrans, drot2 = calculate_diff(X, Y, TH)
-    #print(drot1 + drot2,Particle.genTH - TH)
 
     for i in Particles:
         i.move_particle(drot1, dtrans, drot2)
-
     replace_gen_pos(X, Y, TH)
 
 
@@ -212,18 +180,26 @@ def replace_gen_pos(X, Y, TH):
     Particle.genY = Y
     Particle.genTH = TH
 
-def normalizeAndLineUp(Particles):
+def sum_weights(Particles):
     sum = 0
     for p in Particles:
         sum += p.prop
+    return sum
+
+def normalize_line_up(Particles):
+    sum = sum_weights(Particles)
+    sys.stdout.flush()
     for p in Particles:
         p.normalize(sum)
     nextStartPoint = 0
     for p in Particles:
         nextStartPoint = p.line_up(nextStartPoint)
 
-def selectSurvivors(Particles):
-    normalizeAndLineUp(Particles)
+
+def select_survivors(Particles):
+
+    normalize_line_up(Particles)
+    weight_sum = sum_weights(Particles)
     step = 1 / Particle.NoP
     startPoint = random() / Particle.NoP
     survivors = list()
@@ -233,12 +209,15 @@ def selectSurvivors(Particles):
 
     for i in range(0, Particle.NoP):
         survive = currParticle.survive(currPoint)
+        currPoint = startPoint + i*step
         if survive:
             survivors.append(currParticle)
-            currPoint += step
         else:
             particleIndex += 1
-            print(currParticle.prop)
+            if particleIndex >= Particle.NoP:
+                print('ERROR',particleIndex,currPoint,currParticle.prop)
+                sys.stdout.flush()
+                exit()
             currParticle = Particles[particleIndex]
             i -= 1
 
@@ -247,7 +226,7 @@ def selectSurvivors(Particles):
     for s in survivors:
         children.append(s.procreate())
 
-    print_best_particle(children)
+    #print_best_particle(children)
 
     return children
 

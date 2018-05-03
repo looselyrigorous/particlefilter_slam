@@ -37,10 +37,10 @@ def odometry(msg):
         Particles = mp.init_particles(x,y,th)
         first_odom +=1
         return
-    if odoms%10 != 0:
-        odoms += 1
+    if 0 < odoms < 30:
+        odoms+= 1
         return
-    odoms += 1
+    odoms = 1
 
     mp.odom_update(Particles, x, y, th)
 
@@ -53,19 +53,21 @@ def scanner(msg):
     if first_odom == 0:
         return
     global scanners
-    #print('scanner',scanners)
-    if scanners%10 != 0:
-        scanners += 1
+
+    if 0 < scanners < 30:
+        scanners+= 1
         return
-    scanners += 1
+    scanners = 1
+    #print('scanner',scanners)
     angle_min = msg.angle_min
     angle_max = msg.angle_max
     angle_incr = msg.angle_increment
     range_max = msg.range_max
     measurements = np.asarray(msg.ranges)
+
     mp.map_update(mb.plot_all_lines, mb.prop_map_update,mb.grid_make, pb.map_pos_error_calc,
                   Particles, angle_min, angle_max, angle_incr, measurements, range_max)
-    Particles = mp.selectSurvivors(Particles)
+    Particles = mp.select_survivors(Particles)
 
 # Slam.mapUpdate(Particles,angle_min,angle_max,angle_incr,measurements,range_max)
 # Slam.printBestMap(Particles)
